@@ -2,45 +2,15 @@
 #' 
 #' Given a dataset with alluvial structure, \code{stat_stratum} calculates the
 #' centroids of the strata at each axis, together with their weights (heights).
-#' 
-
-#' @section Aesthetics:
-#' \code{stat_stratum} requires one of two sets of aesthetics:
-#' \itemize{
-#'   \item \code{x}, \code{stratum}, and (optionally) \code{alluvium}
-#'   \item any number of \code{axis[0-9]*} (\code{axis1}, \code{axis2}, etc.)
-#' }
-#' Use \code{x} and \code{stratum} for data in lodes format
-#' (\code{alluvium} is ignored)
-#' and \code{axis[0-9]*} for data in alluvia format
-#' (see \code{\link{is_alluvial}}).
-#' Arguments to parameters inconsistent with the format will be ignored.
-#' 
-#' Additionally, \code{stat_stratum} accepts the following optional aesthetics:
-#' \itemize{
-#'   \item \code{weight}
-#'   \item \code{label}
-#'   \item \code{group}
-#' }
-#' \code{weight} controls the vertical dimensions of the alluvia
-#' and are aggregated across equivalent observations.
-#' \code{label} is used to label the strata and must take a unique value across
-#' the observations within each stratum.
-#' These and any other aesthetics are aggregated as follows:
-#' Numeric aesthetics, including \code{weight}, are summed.
-#' Character and factor aesthetics, including \code{label},
-#' are assigned to strata provided they take unique values across the
-#' observations within each stratum (otherwise \code{NA} is assigned).
-#' \code{group} is used internally; arguments are ignored.
+#' @template stat-aesthetics
 #' 
 
 #' @import ggplot2
-#' @seealso \code{\link[ggplot2]{layer}} for additional arguments,
-#'   \code{\link{geom_stratum}} for the corresponding geom, and
-#'   \code{\link{stat_alluvium}} and \code{\link{geom_alluvium}} for
-#'   alluvial flows.
+#' @family alluvial stat layers
+#' @seealso \code{\link[ggplot2]{layer}} for additional arguments and
+#'   \code{\link{geom_stratum}} for the corresponding geom.
 #' @inheritParams ggplot2::layer
-#' @template common-params
+#' @template layer-params
 #' @param geom The geometric object to use display the data;
 #'    override the default.
 #' @param decreasing Logical; whether to arrange the strata at each axis
@@ -53,6 +23,8 @@
 #'   so that they match the order of the values in the legend.
 #'   Ignored if \code{decreasing} is not \code{NA}.
 #'   Defaults to \code{TRUE}.
+#' @param discern Passed to \code{\link{to_lodes}} if \code{data} is in alluvia
+#'   format.
 #' @param label.strata Logical; whether to assign the values of the axis 
 #'   variables to the strata. Defaults to FALSE, and requires that no
 #'   \code{label} aesthetic is assigned.
@@ -64,6 +36,7 @@ stat_stratum <- function(mapping = NULL,
                          position = "identity",
                          decreasing = NA,
                          reverse = TRUE,
+                         discern = FALSE,
                          label.strata = FALSE,
                          show.legend = NA,
                          inherit.aes = TRUE,
@@ -80,6 +53,7 @@ stat_stratum <- function(mapping = NULL,
     params = list(
       decreasing = decreasing,
       reverse = reverse,
+      discern = discern,
       label.strata = label.strata,
       na.rm = na.rm,
       ...
@@ -128,10 +102,16 @@ StatStratum <- ggproto(
     # ensure that data is in lode form
     if (type == "alluvia") {
       axis_ind <- get_axes(names(data))
-      data <- to_lodes(data = data, axes = axis_ind)
+      data <- to_lodes(data = data, axes = axis_ind,
+                       discern = params$discern)
       # positioning requires numeric 'x'
-      data <- dplyr::arrange(data, x, stratum, alluvium)
+      data <- data[with(data, order(x, stratum, alluvium)), , drop = FALSE]
       data$x <- contiguate(data$x)
+    } else {
+      if (!is.null(params$discern)) {
+        warning("Data is already in lodes format, ",
+                "so 'discern' will be ignored.")
+      }
     }
     
     # nullify 'group' and 'alluvium' fields (to avoid confusion with geoms)
@@ -144,7 +124,7 @@ StatStratum <- ggproto(
   
   compute_panel = function(self, data, scales,
                            decreasing = NA, reverse = TRUE,
-                           label.strata = FALSE) {
+                           discern = FALSE, label.strata = FALSE) {
     
     # introduce label (if absent)
     if (label.strata) {
@@ -165,10 +145,10 @@ StatStratum <- ggproto(
     # sort in preparation for calculating cumulative weights
     data <- if (is.na(decreasing)) {
       arr_fun <- if (reverse) dplyr::desc else identity
-      dplyr::arrange(data, PANEL, x, arr_fun(stratum))
+      data[with(data, order(PANEL, x, arr_fun(stratum))), , drop = FALSE]
     } else {
       arr_fun <- if (decreasing) dplyr::desc else identity
-      dplyr::arrange(data, PANEL, x, arr_fun(weight))
+      data[with(data, order(PANEL, x, arr_fun(weight))), , drop = FALSE]
     }
     
     # calculate cumulative weights

@@ -24,6 +24,7 @@ ggplot(as.data.frame(UCBAdmissions),
   geom_stratum(width = 1/12, fill = "black", color = "grey") +
   geom_label(stat = "stratum", label.strata = TRUE) +
   scale_x_continuous(breaks = 1:2, labels = c("Gender", "Dept")) +
+  scale_fill_brewer(type = "qual", palette = "Set1") +
   ggtitle("UC Berkeley admissions and rejections, by sex and department")
 
 ## ----parallel sets plot of Titanic dataset-------------------------------
@@ -76,6 +77,7 @@ majors$curriculum <- as.factor(majors$curriculum)
 ggplot(majors,
        aes(x = semester, stratum = curriculum, alluvium = student,
            fill = curriculum, label = curriculum)) +
+  scale_fill_brewer(type = "qual", palette = "Set2") +
   geom_flow(stat = "alluvium", lode.guidance = "rightleft",
             color = "darkgray") +
   geom_stratum() +

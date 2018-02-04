@@ -5,33 +5,15 @@
 #' the alluvia with the strata, together with their weights (heights; 
 #' \code{ymin} and \code{ymax}). It leverages the \code{group} aesthetic for 
 #' plotting purposes (for now).
-#' 
-
-#' @section Aesthetics:
-#' \code{stat_alluvium} requires one of two sets of aesthetics:
-#' \itemize{
-#'   \item \code{x}, \code{alluvium}, and (optionally) \code{stratum}
-#'   \item any number of \code{axis[0-9]*} (\code{axis1}, \code{axis2}, etc.)
-#' }
-#' Use \code{x}, \code{alluvium}, and \code{stratum} for data in lodes format
-#' and \code{axis[0-9]*} for data in alluvia format
-#' (see \code{\link{is_alluvial}}).
-#' Arguments to parameters inconsistent with the format will be ignored.
-#' Additionally, \code{stat_alluvium} accepts the following optional aesthetics:
-#' \itemize{
-#'   \item \code{weight}
-#'   \item \code{group}
-#' }
-#' \code{weight} controls the vertical dimensions of the alluvia
-#' and are aggregated across equivalent observations.
-#' \code{group} is used internally; arguments are ignored.
+#' @template stat-aesthetics
 #' 
 
 #' @import ggplot2
-#' @seealso \code{\link[ggplot2]{layer}} for additional arguments,
-#'   \code{\link{geom_alluvium}} for the corresponding geom, and
-#'   \code{\link{stat_stratum}} and \code{\link{geom_stratum}} for
-#'   intra-axis boxes.
+#' @family alluvial stat layers
+#' @seealso \code{\link[ggplot2]{layer}} for additional arguments and
+#'   \code{\link{geom_alluvium}},
+#'   \code{\link{geom_lode}}, and
+#'   \code{\link{geom_flow}} for the corresponding geoms.
 #' @inheritParams stat_flow
 #' @param aggregate.wts Whether to aggregate weights across otherwise equivalent
 #'   rows before computing lode and flow positions. Set to \code{TRUE} to group
@@ -55,6 +37,7 @@ stat_alluvium <- function(mapping = NULL,
                           position = "identity",
                           decreasing = NA,
                           reverse = TRUE,
+                          discern = FALSE,
                           aggregate.wts = FALSE,
                           lode.guidance = "zigzag",
                           lode.ordering = NULL,
@@ -73,6 +56,7 @@ stat_alluvium <- function(mapping = NULL,
     params = list(
       decreasing = decreasing,
       reverse = reverse,
+      discern = discern,
       aggregate.wts = FALSE,
       lode.guidance = lode.guidance,
       lode.ordering = lode.ordering,
@@ -136,10 +120,16 @@ StatAlluvium <- ggproto(
     # ensure that data is in lode form
     if (type == "alluvia") {
       axis_ind <- get_axes(names(data))
-      data <- to_lodes(data = data, axes = axis_ind)
+      data <- to_lodes(data = data, axes = axis_ind,
+                       discern = params$discern)
       # positioning requires numeric 'x'
-      data <- dplyr::arrange(data, x, stratum, alluvium)
+      data <- data[with(data, order(x, stratum, alluvium)), , drop = FALSE]
       data$x <- contiguate(data$x)
+    } else {
+      if (!is.null(params$discern)) {
+        warning("Data is already in lodes format, ",
+                "so 'discern' will be ignored.")
+      }
     }
     
     data
@@ -147,6 +137,7 @@ StatAlluvium <- ggproto(
   
   compute_panel = function(data, scales,
                            decreasing = NA, reverse = TRUE,
+                           discern = FALSE,
                            aggregate.wts = FALSE,
                            lode.guidance = "zigzag",
                            aes.bind = FALSE,
@@ -157,12 +148,10 @@ StatAlluvium <- ggproto(
     # sort data by 'x' then 'alluvium' (to match 'alluv' downstream)
     data <- data[do.call(order, data[, c("x", "alluvium")]), ]
     # ensure that 'alluvium' values are contiguous starting at 1
-    data$alluvium <- as.numeric(as.factor(data$alluvium))
+    data$alluvium <- contiguate(data$alluvium)
     
-    # aesthetic fields
-    aesthetics <- setdiff(names(data),
-                          c("x", "stratum", "alluvium",
-                            "weight", "PANEL", "group"))
+    # aesthetics (in prescribed order)
+    aesthetics <- intersect(.color_diff_aesthetics, names(data))
     
     # create alluvia-format dataset of alluvium stratum assignments,
     # with strata arranged according to 'decreasing' and 'reverse' parameters
@@ -210,14 +199,20 @@ StatAlluvium <- ggproto(
         # return the ordering
         do.call(order, ord_dat)
       }))
+      
+      alluv[, -1] <- apply(lode.ordering, 2, order)
+    } else {
+      # check that array has correct dimensions
+      stopifnot(dim(lode.ordering) ==
+                  c(length(unique(data$alluvium)),
+                    length(unique(data$x))))
+      # ensure that data are sorted first by stratum, only then by lode.ordering
+      alluv[, -1] <- sapply(seq_along(alluv_ind), function(i) {
+        order(order(alluv[, alluv_ind[i]], lode.ordering[, i]))
+      })
     }
-    # check that array has correct dimensions
-    stopifnot(dim(lode.ordering) ==
-                c(dplyr::n_distinct(data$alluvium),
-                  dplyr::n_distinct(data$x)))
     
     # gather lode positions into alluvium-axis-order table
-    alluv[, -1] <- apply(lode.ordering, 2, order)
     alluv_pos <- tidyr::gather(
       alluv,
       key = "x", value = "position",
@@ -229,16 +224,16 @@ StatAlluvium <- ggproto(
     data <- dplyr::left_join(data, alluv_pos, by = c("x", "alluvium"))
     
     # calculate lode floors and ceilings from positions by axis
-    data <- dplyr::arrange(data, position)
+    data <- data[order(data$position), , drop = FALSE]
     data <- dplyr::ungroup(dplyr::mutate(dplyr::group_by(data, x),
                                          ymax = cumsum(weight),
                                          ymin = dplyr::lag(ymax, default = 0)))
     stopifnot(isTRUE(all.equal(data$weight, data$ymax - data$ymin)))
     # add vertical centroids
-    data <- dplyr::mutate(data, y = (ymin + ymax) / 2)
+    data <- transform(data, y = (ymin + ymax) / 2)
     
     # within each alluvium, indices at which contiguous subsets start
-    data <- dplyr::arrange(data, x, alluvium)
+    data <- data[with(data, order(x, alluvium)), , drop = FALSE]
     data$starts <- duplicated(data$alluvium) &
       !duplicated(data[, c("x", "alluvium")])
     data$axis <- contiguate(data$x)
@@ -247,9 +242,9 @@ StatAlluvium <- ggproto(
     data <- dplyr::ungroup(dplyr::mutate(dplyr::group_by(data, alluvium),
                                          flow = axis - cumsum(starts)))
     # add 'group' to group contiguous alluvial subsets
-    data <- dplyr::mutate(data, group = as.numeric(interaction(alluvium, flow)))
+    data <- transform(data, group = as.numeric(interaction(alluvium, flow)))
     # arrange data by aesthetics for consistent (reverse) z-ordering
-    data <- z_order_colors(data)
+    data <- z_order_aes(data, aesthetics)
     
     data
   }

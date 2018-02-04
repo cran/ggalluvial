@@ -6,28 +6,28 @@
 \usage{
 stat_flow(mapping = NULL, data = NULL, geom = "flow",
   position = "identity", decreasing = NA, reverse = TRUE,
-  aes.bind = FALSE, na.rm = FALSE, show.legend = NA, inherit.aes = TRUE,
-  ...)
+  discern = FALSE, aes.bind = FALSE, na.rm = FALSE, show.legend = NA,
+  inherit.aes = TRUE, ...)
 }
 \arguments{
-\item{mapping}{Set of aesthetic mappings created by \code{\link{aes}} or
-\code{\link{aes_}}. If specified and \code{inherit.aes = TRUE} (the
+\item{mapping}{Set of aesthetic mappings created by \code{\link[=aes]{aes()}} or
+\code{\link[=aes_]{aes_()}}. If specified and \code{inherit.aes = TRUE} (the
 default), it is combined with the default mapping at the top level of the
 plot. You must supply \code{mapping} if there is no plot mapping.}
 
 \item{data}{The data to be displayed in this layer. There are three
-   options:
+options:
 
-   If \code{NULL}, the default, the data is inherited from the plot
-   data as specified in the call to \code{\link{ggplot}}.
+If \code{NULL}, the default, the data is inherited from the plot
+data as specified in the call to \code{\link[=ggplot]{ggplot()}}.
 
-   A \code{data.frame}, or other object, will override the plot
-   data. All objects will be fortified to produce a data frame. See
-   \code{\link{fortify}} for which variables will be created.
+A \code{data.frame}, or other object, will override the plot
+data. All objects will be fortified to produce a data frame. See
+\code{\link[=fortify]{fortify()}} for which variables will be created.
 
-   A \code{function} will be called with a single argument,
-   the plot data. The return value must be a \code{data.frame.}, and
-   will be used as the layer data.}
+A \code{function} will be called with a single argument,
+the plot data. The return value must be a \code{data.frame.}, and
+will be used as the layer data.}
 
 \item{geom}{The geometric object to use display the data;
 override the default.}
@@ -47,6 +47,9 @@ so that they match the order of the values in the legend.
 Ignored if \code{decreasing} is not \code{NA}.
 Defaults to \code{TRUE}.}
 
+\item{discern}{Passed to \code{\link{to_lodes}} if \code{data} is in alluvia
+format.}
+
 \item{aes.bind}{Whether to prioritize aesthetics before axes (other than the
 index axis) when ordering the lodes within each stratum. Defaults to FALSE.}
 
@@ -57,12 +60,14 @@ plotted in grey (regardless of the color scheme).}
 
 \item{show.legend}{logical. Should this layer be included in the legends?
 \code{NA}, the default, includes if any aesthetics are mapped.
-\code{FALSE} never includes, and \code{TRUE} always includes.}
+\code{FALSE} never includes, and \code{TRUE} always includes.
+It can also be a named logical vector to finely select the aesthetics to
+display.}
 
 \item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics,
 rather than combining with them. This is most useful for helper functions
 that define both data and aesthetics and shouldn't inherit behaviour from
-the default plot specification, e.g. \code{\link{borders}}.}
+the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 
 \item{...}{Additional arguments passed to \code{\link[ggplot2]{layer}}.}
 }
@@ -73,16 +78,20 @@ centroids (\code{x} and \code{y}) and weights (heights; \code{ymin} and
 }
 \section{Aesthetics}{
 
-\code{stat_flow} requires one of two sets of aesthetics:
+\code{stat_alluvium}, \code{stat_flow}, and \code{stat_stratum} require one
+of two sets of aesthetics:
 \itemize{
-  \item \code{x}, \code{alluvium}, and (optionally) \code{stratum}
-  \item any number of \code{axis[0-9]*} (\code{axis1}, \code{axis2}, etc.)
+  \item \strong{\code{x}} and at least one of
+        \strong{\code{alluvium}} and \strong{\code{stratum}}
+  \item any number of \strong{\code{axis[0-9]*}}
+        (\code{axis1}, \code{axis2}, etc.)
 }
-Use \code{x}, \code{alluvium}, and \code{stratum} for data in lodes format
+Use \code{x}, \code{alluvium}, and/or \code{stratum} for data in lodes format
 and \code{axis[0-9]*} for data in alluvia format
 (see \code{\link{is_alluvial}}).
 Arguments to parameters inconsistent with the format will be ignored.
-Additionally, \code{stat_flow} accepts the following optional aesthetics:
+Additionally, each \code{stat_*} layer accepts the following optional
+aesthetics:
 \itemize{
   \item \code{weight}
   \item \code{group}
@@ -90,6 +99,17 @@ Additionally, \code{stat_flow} accepts the following optional aesthetics:
 \code{weight} controls the vertical dimensions of the alluvia
 and are aggregated across equivalent observations.
 \code{group} is used internally; arguments are ignored.
+Finally, \code{stat_stratum} accepts the following optional aesthetic:
+\itemize{
+  \item \code{label}
+}
+\code{label} is used to label the strata and must take a unique value across
+the observations within each stratum.
+These and any other aesthetics are aggregated as follows:
+Numeric aesthetics, including \code{weight}, are summed.
+Character and factor aesthetics, including \code{label},
+are assigned to strata provided they take unique values across the
+observations within each stratum (otherwise \code{NA} is assigned).
 }
 
 \examples{
@@ -115,20 +135,15 @@ ggplot(as.data.frame(Titanic),
   scale_x_continuous(breaks = 1:3, labels = c("Class", "Sex", "Age"))
 
 data(vaccinations)
+gg <- ggplot(vaccinations,
+             aes(x = survey, stratum = response, alluvium = subject,
+                 weight = freq, fill = response)) +
+  geom_stratum(alpha = .5) +
+  geom_text(aes(label = response), stat = "stratum")
 # rightward alluvial aesthetics for vaccine survey data
-ggplot(vaccinations,
-       aes(x = survey, stratum = response, alluvium = subject,
-           weight = freq, fill = response)) +
-  geom_flow(stat = "alluvium", lode.guidance = "rightward") +
-  geom_stratum(alpha = .5) +
-  geom_text(aes(label = response), stat = "stratum")
+gg + geom_flow(stat = "alluvium", lode.guidance = "rightward")
 # memoryless flows for vaccine survey data
-ggplot(vaccinations,
-       aes(x = survey, stratum = response, alluvium = subject,
-           weight = freq, fill = response)) +
-  geom_flow() +
-  geom_stratum(alpha = .5) +
-  geom_text(aes(label = response), stat = "stratum")
+gg + geom_flow()
 
 # aesthetics that vary betwween and within strata
 data(vaccinations)
@@ -142,7 +157,6 @@ ggplot(vaccinations,
   scale_alpha_discrete(range = c(1/3, 2/3)) +
   geom_stratum(alpha = .5) +
   geom_text(stat = "stratum")
-
 # can even set aesthetics that vary both ways
 ggplot(vaccinations,
        aes(x = survey, stratum = response, alluvium = subject,
@@ -151,10 +165,20 @@ ggplot(vaccinations,
   scale_alpha_discrete(range = c(1/3, 2/3)) +
   geom_stratum(alpha = .5) +
   geom_text(stat = "stratum")
+
+data(majors)
+# omit missing lodes and incident flows
+ggplot(majors,
+       aes(x = semester, stratum = curriculum, alluvium = student)) +
+  geom_flow(fill = "darkgrey", na.rm = TRUE) +
+  geom_stratum(aes(fill = curriculum), color = NA, na.rm = TRUE) +
+  theme_bw()
 }
 \seealso{
-\code{\link[ggplot2]{layer}} for additional arguments,
-  \code{\link{geom_flow}} for the corresponding geom, and
-  \code{\link{stat_stratum}} and \code{\link{geom_stratum}} for
-  intra-axis boxes.
+\code{\link[ggplot2]{layer}} for additional arguments and
+  \code{\link{geom_alluvium}} and
+  \code{\link{geom_flow}} for the corresponding geoms.
+
+Other alluvial stat layers: \code{\link{stat_alluvium}},
+  \code{\link{stat_stratum}}
 }

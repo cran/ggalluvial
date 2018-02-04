@@ -10,24 +10,24 @@ geom_alluvium(mapping = NULL, data = NULL, stat = "alluvium",
   inherit.aes = TRUE, ...)
 }
 \arguments{
-\item{mapping}{Set of aesthetic mappings created by \code{\link{aes}} or
-\code{\link{aes_}}. If specified and \code{inherit.aes = TRUE} (the
+\item{mapping}{Set of aesthetic mappings created by \code{\link[=aes]{aes()}} or
+\code{\link[=aes_]{aes_()}}. If specified and \code{inherit.aes = TRUE} (the
 default), it is combined with the default mapping at the top level of the
 plot. You must supply \code{mapping} if there is no plot mapping.}
 
 \item{data}{The data to be displayed in this layer. There are three
-   options:
+options:
 
-   If \code{NULL}, the default, the data is inherited from the plot
-   data as specified in the call to \code{\link{ggplot}}.
+If \code{NULL}, the default, the data is inherited from the plot
+data as specified in the call to \code{\link[=ggplot]{ggplot()}}.
 
-   A \code{data.frame}, or other object, will override the plot
-   data. All objects will be fortified to produce a data frame. See
-   \code{\link{fortify}} for which variables will be created.
+A \code{data.frame}, or other object, will override the plot
+data. All objects will be fortified to produce a data frame. See
+\code{\link[=fortify]{fortify()}} for which variables will be created.
 
-   A \code{function} will be called with a single argument,
-   the plot data. The return value must be a \code{data.frame.}, and
-   will be used as the layer data.}
+A \code{function} will be called with a single argument,
+the plot data. The return value must be a \code{data.frame.}, and
+will be used as the layer data.}
 
 \item{stat}{The statistical transformation to use on the data;
 override the default.}
@@ -53,12 +53,14 @@ plotted in grey (regardless of the color scheme).}
 
 \item{show.legend}{logical. Should this layer be included in the legends?
 \code{NA}, the default, includes if any aesthetics are mapped.
-\code{FALSE} never includes, and \code{TRUE} always includes.}
+\code{FALSE} never includes, and \code{TRUE} always includes.
+It can also be a named logical vector to finely select the aesthetics to
+display.}
 
 \item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics,
 rather than combining with them. This is most useful for helper functions
 that define both data and aesthetics and shouldn't inherit behaviour from
-the default plot specification, e.g. \code{\link{borders}}.}
+the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 
 \item{...}{Additional arguments passed to \code{\link[ggplot2]{layer}}.}
 }
@@ -71,8 +73,9 @@ flows between them, using \code{\link{geom_flow}}.
 }
 \section{Aesthetics}{
 
-\code{geom_alluvium} understands the following aesthetics
-(required aesthetics are in bold):
+\code{geom_alluvium}, \code{geom_flow}, \code{geom_lode}, and
+\code{geom_stratum} understand the following aesthetics (required aesthetics
+are in bold):
 \itemize{
   \item \strong{\code{x}}
   \item \strong{\code{y}}
@@ -97,21 +100,20 @@ ggplot(as.data.frame(Titanic),
   geom_alluvium() +
   scale_x_continuous(breaks = 1:3, labels = c("Class", "Sex", "Age"))
 
+gg <- ggplot(alluvial::Refugees,
+             aes(weight = refugees, x = year, alluvium = country))
 # time series bump chart
-ggplot(alluvial::Refugees,
-       aes(weight = refugees,
-           x = year, alluvium = country,
-           fill = country, colour = country)) +
-  geom_alluvium(width = 1/4, alpha = 2/3, decreasing = FALSE)
-
+gg + geom_alluvium(aes(fill = country, colour = country),
+                   width = 1/4, alpha = 2/3, decreasing = FALSE)
 # time series line plot of refugees data, sorted by country
-ggplot(data = alluvial::Refugees,
-       aes(x = year, weight = refugees, alluvium = country)) +
-  geom_alluvium(aes(fill = country),
-                colour = "black", decreasing = NA, width = 0, knot.pos = 0)
+gg + geom_alluvium(aes(fill = country),
+                   colour = "black", decreasing = NA, width = 0, knot.pos = 0)
 }
 \seealso{
-\code{\link[ggplot2]{layer}} for additional arguments, and
-  \code{\link{stat_stratum}} and \code{\link{geom_stratum}} for 
-  intra-axis boxes.
+\code{\link[ggplot2]{layer}} for additional arguments and
+  \code{\link{stat_alluvium}} and
+  \code{\link{stat_flow}} for the corresponding stats.
+
+Other alluvial geom layers: \code{\link{geom_flow}},
+  \code{\link{geom_lode}}, \code{\link{geom_stratum}}
 }
