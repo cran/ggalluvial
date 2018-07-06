@@ -1,20 +1,19 @@
 # illustrate positioning
 ggplot(as.data.frame(Titanic),
-       aes(weight = Freq,
+       aes(y = Freq,
            axis1 = Class, axis2 = Sex, axis3 = Age,
            color = Survived)) +
   stat_stratum(geom = "errorbar") +
   geom_line(stat = "alluvium") +
   stat_alluvium(geom = "pointrange") +
   geom_text(stat = "stratum", label.strata = TRUE) +
-  scale_x_continuous(breaks = 1:3,
-                     labels = c("Class", "Sex", "Age"))
+  scale_x_discrete(limits = c("Class", "Sex", "Age"))
 
 gg <- ggplot(as.data.frame(Titanic),
-             aes(weight = Freq,
+             aes(y = Freq,
                  axis1 = Class, axis2 = Sex, axis3 = Age)) +
   geom_stratum() + geom_text(stat = "stratum", label.strata = TRUE) +
-  scale_x_continuous(breaks = 1:3, labels = c("Class", "Sex", "Age"))
+  scale_x_discrete(limits = c("Class", "Sex", "Age"))
 # use of lode controls
 gg + geom_flow(aes(fill = Survived, alpha = Sex), stat = "alluvium",
                aes.bind = TRUE, lode.guidance = "rightward")
@@ -26,10 +25,17 @@ gg + geom_flow(aes(fill = Survived, alpha = Sex), stat = "alluvium",
 data(majors)
 # omit missing lodes and incident flows
 ggplot(majors,
-       aes(x = semester, stratum = curriculum, alluvium = student)) +
+             aes(x = semester, stratum = curriculum, alluvium = student)) +
   geom_alluvium(fill = "darkgrey", na.rm = TRUE) +
   geom_stratum(aes(fill = curriculum), color = NA, na.rm = TRUE) +
   theme_bw()
+# reverse the vertical axis (requires an explicit `y` aesthetic)
+ggplot(majors,
+       aes(x = semester, stratum = curriculum, alluvium = student, y = 1)) +
+  geom_alluvium(fill = "darkgrey", na.rm = TRUE) +
+  geom_stratum(aes(fill = curriculum), color = NA, na.rm = TRUE) +
+  theme_bw() +
+  scale_y_reverse()
 
 gg <- ggplot(majors,
              aes(x = semester, stratum = curriculum, alluvium = student,
@@ -40,7 +46,7 @@ gg + geom_flow(stat = "alluvium", lode.guidance = "rightleft",
                color = "black")
 # same diagram with students are aggregated into cohorts
 gg + geom_flow(stat = "alluvium", lode.guidance = "rightleft",
-               color = "black", aggregate.wts = TRUE)
+               color = "black", aggregate.y = TRUE)
 
 \dontrun{
   data(babynames, package = "babynames")
@@ -49,7 +55,7 @@ gg + geom_flow(stat = "alluvium", lode.guidance = "rightleft",
                       prop >= .01 & sex == "F" &
                         year > 1962 & year < 1968)
   ggplot(data = bn,
-         aes(x = year, alluvium = name, weight = prop)) +
+         aes(x = year, alluvium = name, y = prop)) +
     geom_alluvium(aes(fill = name, color = name == "Tammy"),
                   decreasing = TRUE, show.legend = FALSE) +
     scale_color_manual(values = c("#00000000", "#000000"))
@@ -59,7 +65,7 @@ gg + geom_flow(stat = "alluvium", lode.guidance = "rightleft",
                all = TRUE)
   bn2$prop[is.na(bn2$prop)] <- 0
   ggplot(data = bn2,
-         aes(x = year, alluvium = name, weight = prop)) +
+         aes(x = year, alluvium = name, y = prop)) +
     geom_alluvium(aes(fill = name, color = name == "Tammy"),
                   decreasing = TRUE, show.legend = FALSE) +
     scale_color_manual(values = c("#00000000", "#000000"))

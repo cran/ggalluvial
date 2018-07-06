@@ -6,7 +6,7 @@
 \usage{
 geom_stratum(mapping = NULL, data = NULL, stat = "stratum",
   position = "identity", show.legend = NA, inherit.aes = TRUE,
-  width = 1/3, axis_width = NULL, na.rm = FALSE, ...)
+  width = 1/3, na.rm = FALSE, ...)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by \code{\link[=aes]{aes()}} or
@@ -48,8 +48,6 @@ the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 \item{width}{Numeric; the width of each stratum, as a proportion of the
 distance between axes. Defaults to 1/3.}
 
-\item{axis_width}{Deprecated; alias for \code{width}.}
-
 \item{na.rm}{Logical:
 if \code{FALSE}, the default, \code{NA} lodes are not included;
 if \code{TRUE}, \code{NA} lodes constitute a separate category,
@@ -83,22 +81,27 @@ are in bold):
 \code{group} is used internally; arguments are ignored.
 }
 
+\section{Defunct parameters}{
+
+The previously deprecated parameters \code{axis_width} and \code{ribbon_bend}
+are now defunct. Use \code{width} and \code{knot.pos} instead.
+}
+
 \examples{
 # full axis width
 ggplot(as.data.frame(Titanic),
-       aes(weight = Freq,
+       aes(y = Freq,
            axis1 = Class, axis2 = Sex, axis3 = Age, axis4 = Survived)) +
   geom_stratum(width = 1) + geom_text(stat = "stratum", label.strata = TRUE) +
-  scale_x_continuous(breaks = 1:4,
-                     labels = c("Class", "Sex", "Age", "Survived"))
+  scale_x_discrete(limits = c("Class", "Sex", "Age", "Survived"))
   
 # use of facets
 ggplot(as.data.frame(Titanic),
-       aes(weight = Freq,
+       aes(y = Freq,
            axis1 = Class, axis2 = Sex)) +
   geom_flow(aes(fill = Survived)) +
   geom_stratum() + geom_text(stat = "stratum", label.strata = TRUE) +
-  scale_x_continuous(breaks = 1:2, labels = c("Class", "Sex")) +
+  scale_x_discrete(limits = c("Class", "Sex")) +
   facet_wrap(~ Age, scales = "free_y")
 }
 \seealso{

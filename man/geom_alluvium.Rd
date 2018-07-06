@@ -5,9 +5,8 @@
 \title{Alluvia across strata}
 \usage{
 geom_alluvium(mapping = NULL, data = NULL, stat = "alluvium",
-  position = "identity", width = 1/3, axis_width = NULL, knot.pos = 1/6,
-  ribbon_bend = NULL, na.rm = FALSE, show.legend = NA,
-  inherit.aes = TRUE, ...)
+  position = "identity", width = 1/3, knot.pos = 1/6, na.rm = FALSE,
+  show.legend = NA, inherit.aes = TRUE, ...)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by \code{\link[=aes]{aes()}} or
@@ -38,13 +37,9 @@ a call to a position adjustment function.}
 \item{width}{Numeric; the width of each stratum, as a proportion of the
 distance between axes. Defaults to 1/3.}
 
-\item{axis_width}{Deprecated; alias for \code{width}.}
-
 \item{knot.pos}{The horizontal distance between a stratum (\code{width/2}
 from its axis) and the knot of the x-spline, as a proportion of the
 separation between strata. Defaults to 1/6.}
-
-\item{ribbon_bend}{Deprecated; alias for \code{knot.pos}.}
 
 \item{na.rm}{Logical:
 if \code{FALSE}, the default, \code{NA} lodes are not included;
@@ -65,7 +60,7 @@ the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 \item{...}{Additional arguments passed to \code{\link[ggplot2]{layer}}.}
 }
 \description{
-\code{geom_alluvium} receives a dataset of the horizontal (\code{x}) and 
+\code{geom_alluvium} receives a dataset of the horizontal (\code{x}) and
 vertical (\code{y}, \code{ymin}, \code{ymax}) positions of the \strong{lodes}
 of an alluvial diagram, the intersections of the alluvia with the strata.
 It plots both the lodes themselves, using \code{\link{geom_lode}}, and the
@@ -91,23 +86,29 @@ are in bold):
 \code{group} is used internally; arguments are ignored.
 }
 
+\section{Defunct parameters}{
+
+The previously deprecated parameters \code{axis_width} and \code{ribbon_bend}
+are now defunct. Use \code{width} and \code{knot.pos} instead.
+}
+
 \examples{
 # basic
 ggplot(as.data.frame(Titanic),
-       aes(weight = Freq,
+       aes(y = Freq,
            axis1 = Class, axis2 = Sex, axis3 = Age,
            fill = Survived)) +
   geom_alluvium() +
-  scale_x_continuous(breaks = 1:3, labels = c("Class", "Sex", "Age"))
+  scale_x_discrete(limits = c("Class", "Sex", "Age"))
 
 gg <- ggplot(alluvial::Refugees,
-             aes(weight = refugees, x = year, alluvium = country))
+             aes(y = refugees, x = year, alluvium = country))
 # time series bump chart
 gg + geom_alluvium(aes(fill = country, colour = country),
                    width = 1/4, alpha = 2/3, decreasing = FALSE)
 # time series line plot of refugees data, sorted by country
-gg + geom_alluvium(aes(fill = country),
-                   colour = "black", decreasing = NA, width = 0, knot.pos = 0)
+gg + geom_alluvium(aes(fill = country, colour = country),
+                   decreasing = NA, width = 0, knot.pos = 0)
 }
 \seealso{
 \code{\link[ggplot2]{layer}} for additional arguments and

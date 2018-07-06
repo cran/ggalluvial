@@ -1,6 +1,6 @@
 #' Flows between lodes or strata
-#' 
-#' \code{geom_flow} receives a dataset of the horizontal (\code{x}) and 
+#'
+#' \code{geom_flow} receives a dataset of the horizontal (\code{x}) and
 #' vertical (\code{y}, \code{ymin}, \code{ymax}) positions of the \strong{lodes}
 #' of an alluvial diagram, the intersections of the alluvia with the strata.
 #' It reconfigures these into alluvial segments connecting pairs of
@@ -8,7 +8,8 @@
 #' each such pair, using a provided knot position parameter \code{knot.pos}, and
 #' filled rectangles at either end, using a provided \code{width}.
 #' @template geom-aesthetics
-#' 
+#' @template defunct-geom-params
+#'
 
 #' @import ggplot2
 #' @family alluvial geom layers
@@ -24,16 +25,16 @@ geom_flow <- function(mapping = NULL,
                       data = NULL,
                       stat = "flow",
                       position = "identity",
-                      width = 1/3, axis_width = NULL,
-                      knot.pos = 1/6, ribbon_bend = NULL,
+                      width = 1/3,
+                      knot.pos = 1/6,
                       aes.flow = "forward",
                       na.rm = FALSE,
                       show.legend = NA,
                       inherit.aes = TRUE,
                       ...) {
-  
+
   aes.flow <- match.arg(aes.flow, c("forward", "backward"))
-  
+
   layer(
     geom = GeomFlow,
     mapping = mapping,
@@ -43,8 +44,8 @@ geom_flow <- function(mapping = NULL,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     params = list(
-      width = width, axis_width = axis_width,
-      knot.pos = knot.pos, ribbon_bend = ribbon_bend,
+      width = width,
+      knot.pos = knot.pos,
       aes.flow = aes.flow,
       na.rm = na.rm,
       ...
@@ -57,71 +58,68 @@ geom_flow <- function(mapping = NULL,
 #' @export
 GeomFlow <- ggproto(
   "GeomFlow", Geom,
-  
+
   required_aes = c("x", "y", "ymin", "ymax"),
-  
+
   default_aes = aes(size = .5, linetype = 1,
                     colour = 0, fill = "gray", alpha = .5),
-  
+
   setup_params = function(data, params) {
-    
-    if (!is.null(params$axis_width)) {
-      warning("Parameter 'axis_width' is deprecated; use 'width' instead.")
-      params$width <- params$axis_width
-      params$axis_width <- NULL
-    }
-    
-    if (!is.null(params$ribbon_bend)) {
-      warning("Parameter 'ribbon_bend' is deprecated; use 'knot.pos' instead.")
-      params$knot.pos <- params$ribbon_bend
-      params$ribbon_bend <- NULL
-    }
-    
+
     params
   },
-  
+
   setup_data = function(data, params) {
-    
+
     # positioning parameters
     transform(data,
               xmin = x - params$width / 2,
               xmax = x + params$width / 2,
               knot.pos = params$knot.pos)
   },
-  
+
   draw_panel = function(self, data, panel_params, coord,
-                        width = 1/3, axis_width = NULL,
-                        aes.flow = "forward",
-                        knot.pos = 1/6, ribbon_bend = NULL) {
-    
+                        width = 1/3, aes.flow = "forward", knot.pos = 1/6) {
+
     # exclude one-sided flows
     data <- data[complete.cases(data), ]
-    
+
     # adjoin data with itself by alluvia along adjacent axes
     flow_pos <- intersect(names(data), c("x", "xmin", "xmax", "width",
-                                         "y", "ymin", "ymax", "weight",
-                                         "knot.pos"))
+                                         "y", "ymin", "ymax", "knot.pos"))
     flow_aes <- intersect(names(data), c("size", "linetype",
                                          "colour", "fill", "alpha"))
     flow_fore <- if (aes.flow != "backward") flow_aes else NULL
     flow_back <- if (aes.flow != "forward") flow_aes else NULL
-    data <- self_adjoin(data, "x", "alluvium", pair = flow_pos,
-                        keep0 = flow_fore, keep1 = flow_back)
-    
+    data <- self_adjoin(
+      data = data, key = "x", by = "alluvium",
+      link = flow_pos,
+      keep.x = flow_fore, keep.y = flow_back,
+      suffix = c(".0", ".1")
+    )
+
+    # aesthetics (in prescribed order)
+    aesthetics <- intersect(.color_diff_aesthetics, names(data))
+    # arrange data by aesthetics for consistent (reverse) z-ordering
+    data <- data[do.call(order, lapply(
+      data[, c("step", aesthetics)],
+      function(x) factor(x, levels = unique(x))
+    )), ]
+
     # construct spline grobs
     xspls <- plyr::alply(data, 1, function(row) {
-      
+
       # spline paths and aesthetics
-      xspl <- knots_to_xspl(row$xmax0, row$xmin1,
-                            row$ymin0, row$ymax0, row$ymin1, row$ymax1,
-                            row$knot.pos0, row$knot.pos1)
+      xspl <- knots_to_xspl(row$xmax.0, row$xmin.1,
+                            row$ymin.0, row$ymax.0, row$ymin.1, row$ymax.1,
+                            row$knot.pos.0, row$knot.pos.1)
       aes <- as.data.frame(row[flow_aes],
                            stringsAsFactors = FALSE)[rep(1, 8), ]
       f_data <- cbind(xspl, aes)
-      
+
       # transform (after calculating spline paths)
       f_coords <- coord$transform(f_data, panel_params)
-      
+
       # single spline grob
       grid::xsplineGrob(
         x = f_coords$x, y = f_coords$y, shape = f_coords$shape,
@@ -132,12 +130,12 @@ GeomFlow <- ggproto(
         )
       )
     })
-    
+
     # combine spline grobs
     grob <- do.call(grid::grobTree, xspls)
     grob$name <- grid::grobName(grob, "xspline")
     grob
   },
-  
+
   draw_key = draw_key_polygon
 )
