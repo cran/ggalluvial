@@ -67,7 +67,7 @@ the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 \description{
 \code{geom_flow} receives a dataset of the horizontal (\code{x}) and
 vertical (\code{y}, \code{ymin}, \code{ymax}) positions of the \strong{lodes}
-of an alluvial diagram, the intersections of the alluvia with the strata.
+of an alluvial plot, the intersections of the alluvia with the strata.
 It reconfigures these into alluvial segments connecting pairs of
 corresponding lodes in adjacent strata and plots filled x-splines between
 each such pair, using a provided knot position parameter \code{knot.pos}, and
@@ -95,8 +95,8 @@ following aesthetics (required aesthetics are in bold):
 
 \section{Defunct parameters}{
 
-The previously deprecated parameters \code{axis_width} and \code{ribbon_bend} are now
-defunct. Use \code{width} and \code{knot.pos} instead.
+The previously defunct parameters \code{axis_width} and \code{ribbon_bend} have been
+discontinued. Use \code{width} and \code{knot.pos} instead.
 }
 
 \examples{
@@ -106,8 +106,8 @@ ggplot(as.data.frame(Titanic),
            axis1 = Class, axis2 = Sex, axis3 = Age)) +
   geom_flow() +
   scale_x_discrete(limits = c("Class", "Sex", "Age")) +
-  geom_stratum() + geom_text(stat = "stratum", label.strata = TRUE) +
-  ggtitle("Alluvial diagram of Titanic passenger demographic data")
+  geom_stratum() + geom_text(stat = "stratum", infer.label = TRUE) +
+  ggtitle("Alluvial plot of Titanic passenger demographic data")
 
 # use of facets
 ggplot(as.data.frame(Titanic),
@@ -115,7 +115,7 @@ ggplot(as.data.frame(Titanic),
            axis1 = Class, axis2 = Sex)) +
   geom_flow(aes(fill = Age), width = .4) +
   geom_stratum(width = .4) +
-  geom_text(stat = "stratum", label.strata = TRUE, size = 3) +
+  geom_text(stat = "stratum", infer.label = TRUE, size = 3) +
   scale_x_discrete(limits = c("Class", "Sex")) +
   facet_wrap(~ Survived, scales = "fixed")
 

@@ -1,6 +1,6 @@
 #' Check for alluvial structure and convert between alluvial formats
 #'
-#' Alluvial diagrams consist of multiple horizontally-distributed columns (axes)
+#' Alluvial plots consist of multiple horizontally-distributed columns (axes)
 #' representing factor variables, vertical divisions (strata) of these axes
 #' representing these variables' values; and splines (alluvial flows) connecting
 #' vertical subdivisions (lodes) within strata of adjacent axes representing
@@ -19,14 +19,14 @@
 #'   for this structure.
 #'
 #' `to_lodes_form` takes a data frame with several designated variables to
-#' be used as axes in an alluvial diagram, and reshapes the data frame so that
+#' be used as axes in an alluvial plot, and reshapes the data frame so that
 #' the axis variable names constitute a new factor variable and their values
 #' comprise another. Other variables' values will be repeated, and a
 #' row-grouping variable can be introduced. This function invokes
 #' [tidyr::gather()].
 #'
 #' `to_alluvia_form` takes a data frame with axis and axis value variables
-#' to be used in an alluvial diagram, and reshape the data frame so that the
+#' to be used in an alluvial plot, and reshape the data frame so that the
 #' axes constitute separate variables whose values are given by the value
 #' variable. This function invokes [tidyr::spread()].
 #'
@@ -35,7 +35,7 @@
 #' @import tidyselect
 #' @family alluvial data manipulation
 #' @param data A data frame.
-#' @param logical Deprecated. Whether to return a logical value or a character
+#' @param logical Defunct. Whether to return a logical value or a character
 #'   string indicating the type of alluvial structure ("none", "lodes", or
 #'   "alluvia").
 #' @param silent Whether to print messages.
@@ -100,10 +100,6 @@ is_lodes_form <- function(data,
     if (! is.numeric(data[[weight_var]])) {
       if (! silent) message("Lode weights are non-numeric.")
       return(if (logical) FALSE else "none")
-    } else if (any(data[[weight_var]] < 0)) {
-      if (! silent) message("Some lode weights are negative.")
-      #return(if (logical) FALSE else "none")
-      return(if (logical) TRUE else "lodes")
     }
   }
   
@@ -124,9 +120,6 @@ is_alluvia_form <- function(data,
     weight_var <- vars_select(names(data), !! rlang::enquo(weight))
     if (! is.numeric(data[[weight_var]])) {
       if (! silent) message("Alluvium weights are non-numeric.")
-      return(if (logical) FALSE else "none")
-    } else if (any(data[[weight_var]] < 0)) {
-      if (! silent) message("Some alluvium weights are negative.")
       return(if (logical) FALSE else "none")
     }
   }

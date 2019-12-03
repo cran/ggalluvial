@@ -58,7 +58,7 @@ the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 }
 \description{
 \code{geom_alluvium} receives a dataset of the horizontal (\code{x}) and vertical (\code{y},
-\code{ymin}, \code{ymax}) positions of the \strong{lodes} of an alluvial diagram, the
+\code{ymin}, \code{ymax}) positions of the \strong{lodes} of an alluvial plot, the
 intersections of the alluvia with the strata. It plots rectangles for these
 lodes of a provided \code{width}.
 }
@@ -84,8 +84,8 @@ following aesthetics (required aesthetics are in bold):
 
 \section{Defunct parameters}{
 
-The previously deprecated parameters \code{axis_width} and \code{ribbon_bend} are now
-defunct. Use \code{width} and \code{knot.pos} instead.
+The previously defunct parameters \code{axis_width} and \code{ribbon_bend} have been
+discontinued. Use \code{width} and \code{knot.pos} instead.
 }
 
 \examples{

@@ -6,13 +6,14 @@ ggplot(as.data.frame(Titanic),
   stat_stratum(geom = "errorbar") +
   geom_line(stat = "alluvium") +
   stat_alluvium(geom = "pointrange") +
-  geom_text(stat = "stratum", label.strata = TRUE) +
+  geom_text(stat = "stratum", infer.label = TRUE) +
   scale_x_discrete(limits = c("Class", "Sex", "Age"))
 
+# lode ordering examples
 gg <- ggplot(as.data.frame(Titanic),
              aes(y = Freq,
                  axis1 = Class, axis2 = Sex, axis3 = Age)) +
-  geom_stratum() + geom_text(stat = "stratum", label.strata = TRUE) +
+  geom_stratum() + geom_text(stat = "stratum", infer.label = TRUE) +
   scale_x_discrete(limits = c("Class", "Sex", "Age"))
 # use of lode controls
 gg + geom_flow(aes(fill = Survived, alpha = Sex), stat = "alluvium",
@@ -40,17 +41,9 @@ lode_custom <- function(n, i) {
 }
 gg + geom_flow(aes(fill = Survived, alpha = Sex), stat = "alluvium",
                aes.bind = TRUE, lode.guidance = lode_custom)
-gg + geom_flow(aes(fill = Survived, alpha = Sex), stat = "alluvium",
-               aes.bind = TRUE, lode.guidance = "custom")
 
 data(majors)
-# omit missing lodes and incident flows
-ggplot(majors,
-       aes(x = semester, stratum = curriculum, alluvium = student)) +
-  geom_alluvium(fill = "darkgrey", na.rm = TRUE) +
-  geom_stratum(aes(fill = curriculum), color = NA, na.rm = TRUE) +
-  theme_bw()
-# reverse the vertical axis (requires an explicit `y` aesthetic)
+# omit missing elements & reverse the `y` axis
 ggplot(majors,
        aes(x = semester, stratum = curriculum, alluvium = student, y = 1)) +
   geom_alluvium(fill = "darkgrey", na.rm = TRUE) +
@@ -58,16 +51,24 @@ ggplot(majors,
   theme_bw() +
   scale_y_reverse()
 
+# alluvium cementation examples
 gg <- ggplot(majors,
              aes(x = semester, stratum = curriculum, alluvium = student,
                  fill = curriculum)) +
   geom_stratum()
-# diagram with outlined alluvia and forward-colored flows
-gg + geom_flow(stat = "alluvium", lode.guidance = "frontback",
-               color = "black")
-# same diagram with students are aggregated into cohorts
-gg + geom_flow(stat = "alluvium", lode.guidance = "frontback",
-               color = "black", aggregate.y = TRUE)
+# diagram with outlined alluvia and labels
+gg + geom_flow(stat = "alluvium", color = "black") +
+  geom_text(aes(label = as.integer(student)), stat = "alluvium")
+# cemented diagram with default label cementation
+gg +
+  geom_flow(stat = "alluvium", color = "black", cement.alluvia = TRUE) +
+  geom_text(aes(label = as.integer(student)), stat = "alluvium",
+            cement.alluvia = TRUE)
+# cemented diagram with custom label cementation
+gg +
+  geom_flow(stat = "alluvium", color = "black", cement.alluvia = TRUE) +
+  geom_text(aes(label = as.integer(student)), stat = "alluvium",
+            cement.alluvia = function(x) paste(x, collapse = "; "))
 
 # irregular spacing between axes of a continuous variable
 data(Refugees, package = "alluvial")
@@ -83,9 +84,7 @@ ggplot(data = refugees_sub,
 \dontrun{
 data(babynames, package = "babynames")
 # a discontiguous alluvium
-bn <- dplyr::filter(babynames,
-                    prop >= .01 & sex == "F" &
-                      year > 1962 & year < 1968)
+bn <- subset(babynames, prop >= .01 & sex == "F" & year > 1962 & year < 1968)
 ggplot(data = bn,
        aes(x = year, alluvium = name, y = prop)) +
   geom_alluvium(aes(fill = name, color = name == "Tammy"),
@@ -102,3 +101,14 @@ ggplot(data = bn2,
                 decreasing = TRUE, show.legend = FALSE) +
   scale_color_manual(values = c("#00000000", "#000000"))
 }
+
+# use negative y values to encode deaths versus survivals
+titanic <- as.data.frame(Titanic)
+titanic <- transform(titanic, Lives = Freq * (-1) ^ (Survived == "No"))
+ggplot(subset(titanic, Class != "Crew"),
+       aes(axis1 = Class, axis2 = Sex, axis3 = Age, y = Lives)) +
+  geom_alluvium(aes(alpha = Survived, fill = Class), absolute = FALSE) +
+  geom_stratum(absolute = FALSE) +
+  geom_text(stat = "stratum", infer.label = TRUE, absolute = FALSE) +
+  scale_x_discrete(limits = c("Class", "Sex", "Age"), expand = c(.1, .05)) +
+  scale_alpha_discrete(range = c(.25, .75), guide = FALSE)

@@ -1,10 +1,10 @@
-## ----setup---------------------------------------------------------------
+## ----setup--------------------------------------------------------------------
 knitr::opts_chunk$set(fig.width = 6, fig.height = 4, fig.align = "center")
 library(ggalluvial)
 data(vaccinations)
 levels(vaccinations$response) <- rev(levels(vaccinations$response))
 
-## ----raw-----------------------------------------------------------------
+## ----raw----------------------------------------------------------------------
 ggplot(vaccinations,
        aes(x = survey, stratum = response, alluvium = subject, y = freq,
            fill = response, label = response)) +
@@ -15,27 +15,27 @@ ggplot(vaccinations,
   theme(legend.position = "none") +
   ggtitle("vaccination survey responses", "labeled using `geom_text()`")
 
-## ----omit----------------------------------------------------------------
+## ----omit---------------------------------------------------------------------
 ggplot(vaccinations,
        aes(x = survey, stratum = response, alluvium = subject, y = freq,
            fill = response, label = response)) +
   scale_x_discrete(expand = c(.1, 0)) +
   geom_flow(width = 1/4) +
   geom_stratum(alpha = .5, width = 1/4) +
-  geom_text(stat = "stratum", size = 4, min.height = 100) +
+  geom_text(stat = "stratum", size = 4, min.y = 100) +
   theme(legend.position = "none") +
   ggtitle(
     "vaccination survey responses",
-    "labeled using `geom_text()` with `min.height = 100`"
+    "labeled using `geom_text()` with `min.y = 100`"
   )
 
-## ----aesthetics----------------------------------------------------------
+## ----aesthetics---------------------------------------------------------------
 print(ggrepel::GeomTextRepel$required_aes)
 print(ggfittext:::GeomFitText$required_aes)
 print(ggfittext:::GeomFitText$setup_data)
 print(StatStratum$compute_panel)
 
-## ----ggrepel-------------------------------------------------------------
+## ----ggrepel------------------------------------------------------------------
 ggplot(vaccinations,
        aes(x = survey, stratum = response, alluvium = subject, y = freq,
            fill = response)) +
@@ -54,7 +54,7 @@ ggplot(vaccinations,
   theme(legend.position = "none") +
   ggtitle("vaccination survey responses", "labeled using `geom_text_repel()`")
 
-## ----ggfittext-----------------------------------------------------------
+## ----ggfittext----------------------------------------------------------------
 ggplot(vaccinations,
        aes(x = survey, stratum = response, alluvium = subject, y = freq,
            fill = response, label = response)) +
@@ -65,6 +65,6 @@ ggplot(vaccinations,
   theme(legend.position = "none") +
   ggtitle("vaccination survey responses", "labeled using `geom_fit_text()`")
 
-## ----session info--------------------------------------------------------
+## ----session info-------------------------------------------------------------
 sessioninfo::session_info()
 

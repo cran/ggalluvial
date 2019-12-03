@@ -5,8 +5,11 @@
 \title{Flow positions}
 \usage{
 stat_flow(mapping = NULL, data = NULL, geom = "flow",
-  position = "identity", decreasing = NA, reverse = TRUE,
-  discern = FALSE, aes.bind = FALSE, na.rm = FALSE,
+  position = "identity", decreasing = ggalluvial_opt("decreasing"),
+  reverse = ggalluvial_opt("reverse"),
+  absolute = ggalluvial_opt("absolute"), discern = FALSE,
+  negate.strata = NULL, aes.bind = ggalluvial_opt("aes.bind"),
+  infer.label = FALSE, min.y = NULL, max.y = NULL, na.rm = FALSE,
   show.legend = NA, inherit.aes = TRUE, ...)
 }
 \arguments{
@@ -38,8 +41,8 @@ a call to a position adjustment function.}
 
 \item{decreasing}{Logical; whether to arrange the strata at each axis
 in the order of the variable values (\code{NA}, the default),
-in ascending order of total weight (largest on top, \code{FALSE}), or
-in descending order of total weight (largest on bottom, \code{TRUE}).}
+in ascending order of totals (largest on top, \code{FALSE}), or
+in descending order of totals (largest on bottom, \code{TRUE}).}
 
 \item{reverse}{Logical; if \code{decreasing} is \code{NA},
 whether to arrange the strata at each axis
@@ -48,12 +51,43 @@ so that they match the order of the values in the legend.
 Ignored if \code{decreasing} is not \code{NA}.
 Defaults to \code{TRUE}.}
 
+\item{absolute}{Logical; if some cases or strata are negative,
+whether to arrange them (respecting \code{decreasing} and \code{reverse})
+using negative or absolute values of \code{y}.}
+
 \item{discern}{Passed to \code{\link[=to_lodes_form]{to_lodes_form()}} if \code{data} is in
 alluvia format.}
 
-\item{aes.bind}{Whether to prioritize aesthetics before axes (other than the
-index axis) when ordering the lodes within each stratum. Defaults to
-\code{FALSE}.}
+\item{negate.strata}{A vector of values of the \code{stratum} aesthetic to be
+treated as negative (will ignore missing values with a warning).}
+
+\item{aes.bind}{At what grouping level, if any, to prioritize differentiation
+aesthetics when ordering the lodes within each stratum. Defaults to
+\code{"none"} (no aesthetic binding) with intermediate option \code{"flows"} to bind
+aesthetics after stratifying by axes linked to the index axis (the one
+adjacent axis in \code{stat_flow()}; all remaining axes in \code{stat_alluvium()})
+and strongest option \code{"alluvia"} to bind aesthetics after stratifying by
+the index axis but before stratifying by linked axes (only available for
+\code{stat_alluvium()}). Stratification by any axis is done with respect to the
+strata at that axis, after separating positive and negative strata,
+consistent with the values of \code{decreasing}, \code{reverse}, and \code{absolute}.
+Thus, if \code{"none"}, then lode orderings will not depend on aesthetic
+variables. All aesthetic variables are used, in the order in which they are
+specified in \code{aes()}.}
+
+\item{infer.label}{Logical; whether to assign the \code{stratum} or \code{alluvium}
+variable to the \code{label} aesthetic. Defaults to \code{FALSE}, and requires that
+no \code{label} aesthetic is assigned. This parameter is intended only for uses
+in which the data are in alluva form and are therefore converted to lode
+form before the statistical transformation.}
+
+\item{min.y}{Numeric; bounds on the heights of the strata to be
+rendered. Use these bounds to exclude strata outside a certain range, for
+example when labeling strata using \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}}.}
+
+\item{max.y}{Numeric; bounds on the heights of the strata to be
+rendered. Use these bounds to exclude strata outside a certain range, for
+example when labeling strata using \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}}.}
 
 \item{na.rm}{Logical:
 if \code{FALSE}, the default, \code{NA} lodes are not included;
@@ -75,8 +109,8 @@ the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 }
 \description{
 Given a dataset with alluvial structure, \code{stat_flow} calculates the centroids
-(\code{x} and \code{y}) and weights (heights; \code{ymin} and \code{ymax}) of alluvial flows
-between each pair of adjacent axes.
+(\code{x} and \code{y}) and heights (\code{ymin} and \code{ymax}) of the flows between each pair
+of adjacent axes.
 }
 \section{Aesthetics}{
 
@@ -90,28 +124,54 @@ of two sets of aesthetics:
 Use \code{x}, \code{alluvium}, and/or \code{stratum} for data in lodes format
 and \code{axis[0-9]*} for data in alluvia format (see \code{\link{alluvial-data}}).
 Arguments to parameters inconsistent with the format will be ignored.
-Additionally, each \code{stat_*} layer accepts the following optional
+Additionally, each \code{stat_*()} accepts the following optional
 aesthetics:
 \itemize{
 \item \code{y}
 \item \code{group}
+\item \code{label}
 }
 
 \code{y} controls the heights of the alluvia
 and may be aggregated across equivalent observations.
 \code{group} is used internally; arguments are ignored.
-Finally, \code{stat_stratum} accepts the following optional aesthetic:
-\itemize{
-\item \code{label}
-}
+\code{label} is used to label the strata or lodes and must take a unique value
+across the observations within each stratum or lode.
+Often the same variable will be passed to \code{label} as to the corresponding
+alluvial aesthetic (\code{stratum} or \code{alluvium}).
 
-\code{label} is used to label the strata and must take a unique value across
-the observations within each stratum.
 These and any other aesthetics are aggregated as follows:
 Numeric aesthetics, including \code{y}, are summed.
 Character and factor aesthetics, including \code{label},
-are assigned to strata provided they take unique values across the
-observations within each stratum (otherwise \code{NA} is assigned).
+are assigned to strata or lodes provided they take unique values across the
+observations within each (and are otherwise assigned \code{NA}).
+}
+
+\section{Package options}{
+
+\code{stat_stratum}, \code{stat_alluvium}, and \code{stat_flow} order strata and lodes
+according to the values of several parameters, which must be held fixed
+across every layer in an alluvial plot. These package-specific options set
+global values for these parameters that will be defaulted to when not
+manually set:
+\itemize{
+\item \code{ggalluvial.decreasing} (each \code{stat_*}): defaults to \code{NA}.
+\item \code{ggalluvial.reverse} (each \code{stat_*}): defaults to \code{TRUE}.
+\item \code{ggalluvial.absolute} (each \code{stat_*}): defaults to \code{TRUE}.
+\item \code{ggalluvial.cement.alluvia} (\code{stat_alluvium}): defaults to \code{FALSE}.
+\item \code{ggalluvial.lode.guidance} (\code{stat_alluvium}): defaults to \code{"zigzag"}.
+\item \code{ggalluvial.lode.ordering} (\code{stat_alluvium}): defaults to \code{NULL}.
+\item \code{ggalluvial.aes.bind} (\code{stat_alluvium} and \code{stat_flow}): defaults to
+\code{"none"}.
+}
+
+See \code{\link[base:options]{base::options()}} for how to use options.
+}
+
+\section{Defunct parameters}{
+
+The previously defunct parameters \code{weight} and \code{aggregate.wts} have been
+discontinued. Use \code{y} and \code{cement.alluvia} instead.
 }
 
 \examples{
@@ -123,18 +183,10 @@ ggplot(as.data.frame(Titanic),
   stat_stratum(geom = "errorbar") +
   geom_line(stat = "flow") +
   stat_flow(geom = "pointrange") +
-  geom_text(stat = "stratum", label.strata = TRUE) +
+  geom_text(stat = "stratum", infer.label = TRUE) +
   scale_x_discrete(limits = c("Class", "Sex", "Age"))
 
-# use of lode controls
-ggplot(as.data.frame(Titanic),
-       aes(y = Freq,
-           axis1 = Class, axis2 = Sex, axis3 = Age)) +
-  geom_flow(aes(fill = Survived), aes.bind = TRUE, reverse = FALSE) +
-  geom_stratum(reverse = FALSE) +
-  geom_text(stat = "stratum", label.strata = TRUE, reverse = FALSE) +
-  scale_x_discrete(limits = c("Class", "Sex", "Age"))
-
+# alluvium--flow comparison
 data(vaccinations)
 gg <- ggplot(vaccinations,
              aes(x = survey, stratum = response, alluvium = subject,
@@ -145,6 +197,30 @@ gg <- ggplot(vaccinations,
 gg + geom_flow(stat = "alluvium", lode.guidance = "forward")
 # memoryless flows for vaccine survey data
 gg + geom_flow()
+
+# size filter examples
+gg <- ggplot(vaccinations,
+       aes(y = freq,
+           x = survey, stratum = response, alluvium = subject,
+           fill = response, label = response)) +
+  stat_stratum(alpha = .5) +
+  geom_text(stat = "stratum")
+# omit small flows
+gg + geom_flow(min.y = 50)
+# omit large flows
+gg + geom_flow(max.y = 100)
+
+# negate missing entries
+ggplot(vaccinations,
+       aes(y = freq,
+           x = survey, stratum = response, alluvium = subject,
+           fill = response, label = response,
+           alpha = response != "Missing")) +
+  stat_stratum(negate.strata = "Missing") +
+  geom_flow(negate.strata = "Missing") +
+  geom_text(stat = "stratum", alpha = 1, negate.strata = "Missing") +
+  scale_alpha_discrete(range = c(.2, .6)) +
+  guides(alpha = FALSE)
 
 # aesthetics that vary betwween and within strata
 data(vaccinations)
@@ -162,18 +238,10 @@ ggplot(vaccinations,
 ggplot(vaccinations,
        aes(x = survey, stratum = response, alluvium = subject,
            y = freq, label = response)) +
-  geom_flow(aes(fill = interaction(response, subgroup)), aes.bind = TRUE) +
+  geom_flow(aes(fill = interaction(response, subgroup)), aes.bind = "alluvia") +
   scale_alpha_discrete(range = c(1/3, 2/3)) +
   geom_stratum(alpha = .5) +
   geom_text(stat = "stratum")
-
-data(majors)
-# omit missing lodes and incident flows
-ggplot(majors,
-       aes(x = semester, stratum = curriculum, alluvium = student)) +
-  geom_flow(fill = "darkgrey", na.rm = TRUE) +
-  geom_stratum(aes(fill = curriculum), color = NA, na.rm = TRUE) +
-  theme_bw()
 }
 \seealso{
 \code{\link[ggplot2:layer]{ggplot2::layer()}} for additional arguments and

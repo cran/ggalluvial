@@ -5,10 +5,12 @@
 \title{Stratum positions}
 \usage{
 stat_stratum(mapping = NULL, data = NULL, geom = "stratum",
-  position = "identity", decreasing = NA, reverse = TRUE,
-  discern = FALSE, label.strata = FALSE, min.height = NULL,
-  max.height = NULL, show.legend = NA, inherit.aes = TRUE,
-  na.rm = FALSE, ...)
+  position = "identity", decreasing = ggalluvial_opt("decreasing"),
+  reverse = ggalluvial_opt("reverse"),
+  absolute = ggalluvial_opt("absolute"), discern = FALSE,
+  negate.strata = NULL, infer.label = FALSE, label.strata = NULL,
+  min.y = NULL, max.y = NULL, min.height = NULL, max.height = NULL,
+  na.rm = FALSE, show.legend = NA, inherit.aes = TRUE, ...)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by \code{\link[=aes]{aes()}} or
@@ -39,8 +41,8 @@ a call to a position adjustment function.}
 
 \item{decreasing}{Logical; whether to arrange the strata at each axis
 in the order of the variable values (\code{NA}, the default),
-in ascending order of total weight (largest on top, \code{FALSE}), or
-in descending order of total weight (largest on bottom, \code{TRUE}).}
+in ascending order of totals (largest on top, \code{FALSE}), or
+in descending order of totals (largest on bottom, \code{TRUE}).}
 
 \item{reverse}{Logical; if \code{decreasing} is \code{NA},
 whether to arrange the strata at each axis
@@ -49,16 +51,34 @@ so that they match the order of the values in the legend.
 Ignored if \code{decreasing} is not \code{NA}.
 Defaults to \code{TRUE}.}
 
+\item{absolute}{Logical; if some cases or strata are negative,
+whether to arrange them (respecting \code{decreasing} and \code{reverse})
+using negative or absolute values of \code{y}.}
+
 \item{discern}{Passed to \code{\link[=to_lodes_form]{to_lodes_form()}} if \code{data} is in
 alluvia format.}
 
-\item{label.strata}{Logical; whether to assign the values of the axis
-variables to the strata. Defaults to FALSE, and requires that no
-\code{label} aesthetic is assigned.}
+\item{negate.strata}{A vector of values of the \code{stratum} aesthetic to be
+treated as negative (will ignore missing values with a warning).}
 
-\item{min.height, max.height}{Numeric; bounds on the heights (weights) of the
-strata to be rendered. Use these bounds to exclude strata outside a certain
-range, for example when labeling strata using \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}}.}
+\item{infer.label}{Logical; whether to assign the \code{stratum} or \code{alluvium}
+variable to the \code{label} aesthetic. Defaults to \code{FALSE}, and requires that
+no \code{label} aesthetic is assigned. This parameter is intended only for uses
+in which the data are in alluva form and are therefore converted to lode
+form before the statistical transformation.}
+
+\item{label.strata}{Deprecated; alias for \code{infer.label}.}
+
+\item{min.y, max.y}{Numeric; bounds on the heights of the strata to be
+rendered. Use these bounds to exclude strata outside a certain range, for
+example when labeling strata using \code{\link[ggplot2:geom_text]{ggplot2::geom_text()}}.}
+
+\item{min.height, max.height}{Deprecated aliases for \code{min.y} and \code{max.y}.}
+
+\item{na.rm}{Logical:
+if \code{FALSE}, the default, \code{NA} lodes are not included;
+if \code{TRUE}, \code{NA} lodes constitute a separate category,
+plotted in grey (regardless of the color scheme).}
 
 \item{show.legend}{logical. Should this layer be included in the legends?
 \code{NA}, the default, includes if any aesthetics are mapped.
@@ -71,16 +91,12 @@ rather than combining with them. This is most useful for helper functions
 that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link[=borders]{borders()}}.}
 
-\item{na.rm}{Logical:
-if \code{FALSE}, the default, \code{NA} lodes are not included;
-if \code{TRUE}, \code{NA} lodes constitute a separate category,
-plotted in grey (regardless of the color scheme).}
-
 \item{...}{Additional arguments passed to \code{\link[ggplot2:layer]{ggplot2::layer()}}.}
 }
 \description{
 Given a dataset with alluvial structure, \code{stat_stratum} calculates the
-centroids of the strata at each axis, together with their weights (heights).
+centroids (\code{x} and \code{y}) and heights (\code{ymin} and \code{ymax}) of the strata at each
+axis.
 }
 \section{Aesthetics}{
 
@@ -94,28 +110,54 @@ of two sets of aesthetics:
 Use \code{x}, \code{alluvium}, and/or \code{stratum} for data in lodes format
 and \code{axis[0-9]*} for data in alluvia format (see \code{\link{alluvial-data}}).
 Arguments to parameters inconsistent with the format will be ignored.
-Additionally, each \code{stat_*} layer accepts the following optional
+Additionally, each \code{stat_*()} accepts the following optional
 aesthetics:
 \itemize{
 \item \code{y}
 \item \code{group}
+\item \code{label}
 }
 
 \code{y} controls the heights of the alluvia
 and may be aggregated across equivalent observations.
 \code{group} is used internally; arguments are ignored.
-Finally, \code{stat_stratum} accepts the following optional aesthetic:
-\itemize{
-\item \code{label}
-}
+\code{label} is used to label the strata or lodes and must take a unique value
+across the observations within each stratum or lode.
+Often the same variable will be passed to \code{label} as to the corresponding
+alluvial aesthetic (\code{stratum} or \code{alluvium}).
 
-\code{label} is used to label the strata and must take a unique value across
-the observations within each stratum.
 These and any other aesthetics are aggregated as follows:
 Numeric aesthetics, including \code{y}, are summed.
 Character and factor aesthetics, including \code{label},
-are assigned to strata provided they take unique values across the
-observations within each stratum (otherwise \code{NA} is assigned).
+are assigned to strata or lodes provided they take unique values across the
+observations within each (and are otherwise assigned \code{NA}).
+}
+
+\section{Package options}{
+
+\code{stat_stratum}, \code{stat_alluvium}, and \code{stat_flow} order strata and lodes
+according to the values of several parameters, which must be held fixed
+across every layer in an alluvial plot. These package-specific options set
+global values for these parameters that will be defaulted to when not
+manually set:
+\itemize{
+\item \code{ggalluvial.decreasing} (each \code{stat_*}): defaults to \code{NA}.
+\item \code{ggalluvial.reverse} (each \code{stat_*}): defaults to \code{TRUE}.
+\item \code{ggalluvial.absolute} (each \code{stat_*}): defaults to \code{TRUE}.
+\item \code{ggalluvial.cement.alluvia} (\code{stat_alluvium}): defaults to \code{FALSE}.
+\item \code{ggalluvial.lode.guidance} (\code{stat_alluvium}): defaults to \code{"zigzag"}.
+\item \code{ggalluvial.lode.ordering} (\code{stat_alluvium}): defaults to \code{NULL}.
+\item \code{ggalluvial.aes.bind} (\code{stat_alluvium} and \code{stat_flow}): defaults to
+\code{"none"}.
+}
+
+See \code{\link[base:options]{base::options()}} for how to use options.
+}
+
+\section{Defunct parameters}{
+
+The previously defunct parameters \code{weight} and \code{aggregate.wts} have been
+discontinued. Use \code{y} and \code{cement.alluvia} instead.
 }
 
 \examples{
@@ -127,44 +169,38 @@ ggplot(vaccinations,
            fill = response)) +
   stat_stratum(width = .5)
 
-# lode data: positioning with weight labels
+# lode data, positioning with y labels
 ggplot(vaccinations,
        aes(y = freq,
            x = survey, stratum = response, alluvium = subject,
            label = freq)) +
   stat_stratum(geom = "errorbar") +
   geom_text(stat = "stratum")
-# lode data: positioning with stratum labels
-ggplot(vaccinations,
-       aes(y = freq,
-           x = survey, stratum = response, alluvium = subject,
-           label = response)) +
-  stat_stratum(geom = "errorbar") +
-  geom_text(stat = "stratum")
-
-# alluvium data: positioning with weight labels
-ggplot(as.data.frame(Titanic),
-       aes(y = Freq,
-           axis1 = Class, axis2 = Sex, axis3 = Age, axis4 = Survived,
-           label = Freq)) +
-  geom_text(stat = "stratum") +
-  stat_stratum(geom = "errorbar") +
-  scale_x_discrete(limits = c("Class", "Sex", "Age", "Survived"))
-# alluvium data: positioning with stratum labels
+# alluvium data, positioning with stratum labels
 ggplot(as.data.frame(Titanic),
        aes(y = Freq,
            axis1 = Class, axis2 = Sex, axis3 = Age, axis4 = Survived)) +
-  geom_text(stat = "stratum", label.strata = TRUE) +
+  geom_text(stat = "stratum", infer.label = TRUE) +
   stat_stratum(geom = "errorbar") +
   scale_x_discrete(limits = c("Class", "Sex", "Age", "Survived"))
 
-# omit labels for strata outside a weight range
+# omit labels for strata outside a y range
 ggplot(vaccinations,
        aes(y = freq,
            x = survey, stratum = response,
            fill = response, label = response)) +
   stat_stratum(width = .5) +
-  geom_text(stat = "stratum", min.height = 100)
+  geom_text(stat = "stratum", min.y = 100)
+
+# use negative y values to encode rejection versus acceptance
+admissions <- as.data.frame(UCBAdmissions)
+admissions <- transform(admissions, Count = Freq * (-1) ^ (Admit == "Rejected"))
+ggplot(admissions,
+       aes(y = Count, axis1 = Dept, axis2 = Gender)) +
+  geom_alluvium(aes(fill = Dept), width = 1/12) +
+  geom_stratum(width = 1/12, fill = "black", color = "grey") +
+  geom_label(stat = "stratum", infer.label = TRUE, min.y = 200) +
+  scale_x_discrete(limits = c("Department", "Gender"), expand = c(.05, .05))
 }
 \seealso{
 \code{\link[ggplot2:layer]{ggplot2::layer()}} for additional arguments and

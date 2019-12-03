@@ -64,48 +64,41 @@ contiguate <- function(x) {
   match(x, sort(unique(x)))
 }
 
-# aggregate weights over otherwise equivalent alluvia (omitting missing values)
-aggregate_along <- function(data, key, id, var) {
-  # interaction of all variables to aggregate over
-  data$agg_vars <- as.numeric(interaction(lapply(
-    data[, -match(c(key, id, var), names(data)), drop = FALSE],
-    addNA, ifany = FALSE
-  ), drop = TRUE))
-  # convert to alluvia format
-  alluv_data <- alluviate(data, key, "agg_vars", id)
-  # sort by everything except `id`
-  alluv_data <- alluv_data[do.call(
-    order,
-    alluv_data[, -match(id, names(alluv_data)), drop = FALSE]
-  ), , drop = FALSE]
-  # define map from original to aggregated `id`s
-  alluv_orig <- alluv_data[[id]]
-  alluv_agg <- cumsum(!duplicated(interaction(
-    alluv_data[, -match(id, names(alluv_data)), drop = FALSE]
-  )))
-  # transform `id` in `data` accordingly
-  data[[id]] <- alluv_agg[match(data[[id]], alluv_orig)]
-  # aggregate `var` by all other variables
-  # and ensure that no `key`-`id` pairs are duplicated
-  data <- unique(merge(
-    stats::aggregate(formula = stats::as.formula(paste(var, "~ .")),
-                     data = data[, c(key, id, "agg_vars", var)],
-                     FUN = sum),
-    data[, -match(var, names(data))],
-    all.x = TRUE, all.y = FALSE
-  ))
-  data$agg_vars <- NULL
-  # require that no `key`-`id` pairs are duplicated
-  #stopifnot(all(!duplicated(data[, c(key, id)])))
-  data
+# define 'deposit' variable to rank strata vertically
+deposit_data <- function(data, decreasing, reverse, absolute) {
+  if (is.na(decreasing)) {
+    deposits <- unique(data[, c("x", "yneg", "stratum")])
+    deposits$deposit <- order(order(
+      deposits$x, -deposits$yneg,
+      xtfrm(deposits$stratum) * (-1) ^ (deposits$yneg * absolute + reverse)
+    ))
+  } else {
+    deposits <- stats::aggregate(
+      x = data$y,
+      by = data[, c("x", "yneg", "stratum"), drop = FALSE],
+      FUN = sum
+    )
+    names(deposits)[ncol(deposits)] <- "y"
+    deposits$deposit <- order(order(
+      deposits$x, -deposits$yneg,
+      xtfrm(deposits$y) * (-1) ^ (deposits$yneg * absolute + decreasing),
+      xtfrm(deposits$stratum) * (-1) ^ (deposits$yneg * absolute + reverse)
+    ))
+    deposits$y <- NULL
+  }
+  merge(data, deposits, all.x = TRUE, all.y = FALSE)
 }
 
-# build alluvial dataset for reference during lode-ordering
-alluviate <- function(data, key, value, id) {
-  to_alluvia_form(
-    data[, c(key, value, id)],
-    key = key, value = value, id = id
-  )
+# calculate cumulative 'y' values, accounting for sign
+cumulate <- function(x) {
+  if (length(x) == 0) return(x)
+  s <- setdiff(unique(sign(x)), 0)
+  stopifnot(length(s) == 1 && s %in% c(-1, 1))
+  if (s == 1) {
+    cumsum(x) - x / 2
+  } else {
+    rev(cumsum(rev(x)) - rev(x) / 2)
+  }
 }
 
 # arrange data by aesthetics for consistent (reverse) z-ordering
