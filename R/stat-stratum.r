@@ -246,7 +246,7 @@ StatStratum <- ggproto(
 # select aggregation function based on variable type
 agg_fun <- function(x) {
   if (is.character(x) | is.factor(x)) {
-    function(y) as.character(only(y))
+    function(y) only(y)
   } else if (is.numeric(x)) {
     sum
   } else {
@@ -257,9 +257,15 @@ agg_fun <- function(x) {
 # single unique value, or else NA
 only <- function(x) {
   uniq <- unique(x)
-  if (length(uniq) == 1) {
+  if (length(uniq) == 1L) {
     uniq
   } else {
-    NA
+    switch(
+      class(x),
+      integer = NA_integer_,
+      numeric = NA_real_,
+      character = NA_character_,
+      factor = factor(NA_character_, levels = levels(x))
+    )
   }
 }

@@ -3,11 +3,14 @@
 \name{vaccinations}
 \alias{vaccinations}
 \title{Influenza vaccination rates}
-\format{An alluvial data frame in lodes form.}
+\format{
+An alluvial data frame in lodes form.
+}
 \source{
 RAND American Life Panel \url{https://alpdata.rand.org/}
 }
 \description{
-This is a sample from the RAND ALP surveys on influenza vaccination,
-kindly contributed by Raffaele Vardavas.
+This data set is aggregated from a longitudinal sample from three RAND
+American Life Panel surveys that included questions on influenza vaccination.
+The data were kindly contributed by Raffaele Vardavas.
 }

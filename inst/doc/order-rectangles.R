@@ -23,7 +23,7 @@ ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
 
 ## ----strata-------------------------------------------------------------------
 # collection point and category variables only
-data <- setNames(toy[, 2:3], c("x", "stratum"))
+data <- structure(toy[, 2:3], names = c("x", "stratum"))
 # required fields for stat transformations
 data$y <- 1
 data$PANEL <- 1
@@ -51,7 +51,7 @@ ggplot(toy, aes(x = collection, stratum = category)) +
 
 ## ----alluvia------------------------------------------------------------------
 # collection point, category, and subject variables
-data <- setNames(toy[, 1:3], c("alluvium", "x", "stratum"))
+data <- structure(toy[, 1:3], names = c("alluvium", "x", "stratum"))
 # required fields for stat transformations
 data$y <- 1
 data$PANEL <- 1

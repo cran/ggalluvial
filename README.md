@@ -7,8 +7,8 @@
 status](https://travis-ci.org/corybrunson/ggalluvial.svg?branch=master)](https://travis-ci.org/corybrunson/ggalluvial)
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/ggalluvial)](https://cran.r-project.org/package=ggalluvial)
 
-This is a [**ggplot2** extension](http://www.ggplot2-exts.org/) for
-alluvial plots.
+This is a [**ggplot2** extension](https://exts.ggplot2.tidyverse.org/)
+for alluvial plots.
 
 ## Design
 
@@ -47,11 +47,15 @@ The [cran branch](https://github.com/corybrunson/ggalluvial/tree/cran)
 will contain the version most recently submitted to
 [CRAN](https://cran.r-project.org/package=ggalluvial).
 
-Development versions can be installed from GitHub:
+The development version can be installed from GitHub:
 
 ``` r
 remotes::install_github("corybrunson/ggalluvial", build_vignettes = TRUE)
 ```
+
+Note that, in order to build the vignettes, the imported packages
+**alluvial**, **ggfittext**, and **ggrepel** must be installed. To skip
+this step, leave `build_vignettes` unspecified or set it to `FALSE`.
 
 The [optimization
 branch](https://github.com/corybrunson/ggalluvial/tree/optimization)
@@ -87,15 +91,13 @@ head(titanic_wide)
 ggplot(data = titanic_wide,
        aes(axis1 = Class, axis2 = Sex, axis3 = Age,
            y = Freq)) +
-  scale_x_discrete(limits = c("Class", "Sex", "Age"), expand = c(.1, .05)) +
+  scale_x_discrete(limits = c("Class", "Sex", "Age"), expand = c(.2, .05)) +
   xlab("Demographic") +
   geom_alluvium(aes(fill = Survived)) +
-  geom_stratum() + geom_text(stat = "stratum", label.strata = TRUE) +
+  geom_stratum() + geom_text(stat = "stratum", infer.label = TRUE) +
   theme_minimal() +
   ggtitle("passengers on the maiden voyage of the Titanic",
           "stratified by demographics and survival")
-#> Warning: The parameter `label.strata` is deprecated.
-#> Pass arguments to `infer.label` instead.
 ```
 
 ![](man/figures/README-unnamed-chunk-6-1.png)<!-- -->
@@ -141,7 +143,7 @@ The documentation contains several examples; use `help()` to call forth
 examples of any layer (`stat_*` or `geom_*`) or of the conversion
 functions (`to_*_form`).
 
-## Acknowledgment
+## Acknowledgments
 
 ### Resources
 
@@ -150,11 +152,12 @@ support of colleagues at [UConn Health](https://health.uconn.edu/).
 
 ### Contribute
 
-[Issues](https://github.com/corybrunson/ggalluvial/issues) and [pull
-requests](https://github.com/corybrunson/ggalluvial/pulls) are more than
-welcome\! Pretty much every fix and feature of this package derives from
-a problem or question posed by someone with datasets or design goals i
-hadn’t anticipated.
+Contributions in any form are more than welcome\! Pretty much every fix
+and feature of this package derives from a problem or question posed by
+someone with datasets or design goals i hadn’t anticipated. See the
+[CONTRIBUTING](https://github.com/corybrunson/ggalluvial/blob/master/CONTRIBUTING.md)
+file for guidance, and please respect the [Code of
+Conduct](https://github.com/corybrunson/ggalluvial/blob/master/CODE_OF_CONDUCT.md).
 
 ### Cite
 
