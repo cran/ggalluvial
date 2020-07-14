@@ -7,6 +7,8 @@ test_that("`geom_stratum` draws correctly", {
   a1 <- aes(y = Freq, axis1 = Class, axis2 = Sex, axis3 = Age, axis4 = Survived)
   a2 <- aes(y = Freq, axis1 = Class, axis2 = Sex)
 
+  skip_on_cran()
+  skip_if_not_installed("vdiffr")
   vdiffr::expect_doppelganger(
     "`geom_stratum`: basic",
     ggplot(d, a1) + geom_stratum()
@@ -17,7 +19,8 @@ test_that("`geom_stratum` draws correctly", {
   )
   vdiffr::expect_doppelganger(
     "`geom_stratum`: inferred text labels",
-    ggplot(d, a1) + geom_text(stat = "stratum", infer.label = TRUE)
+    ggplot(d, a1) +
+      geom_text(stat = "stratum", aes(label = after_stat(stratum)))
   )
   vdiffr::expect_doppelganger(
     "`geom_stratum`: axis labels",

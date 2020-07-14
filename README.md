@@ -3,9 +3,11 @@
 
 # ggalluvial
 
-[![Travis build
-status](https://travis-ci.org/corybrunson/ggalluvial.svg?branch=master)](https://travis-ci.org/corybrunson/ggalluvial)
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/ggalluvial)](https://cran.r-project.org/package=ggalluvial)
+[![Travis](https://travis-ci.org/corybrunson/ggalluvial.svg?branch=master)](https://travis-ci.org/corybrunson/ggalluvial)
+[![CRAN](http://www.r-pkg.org/badges/version/ggalluvial)](https://cran.r-project.org/package=ggalluvial)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3836748.svg)](https://doi.org/10.5281/zenodo.3836748)
+[![JOSS](https://joss.theoj.org/papers/10.21105/joss.02017/status.svg)](https://doi.org/10.21105/joss.02017)
 
 This is a [**ggplot2** extension](https://exts.ggplot2.tidyverse.org/)
 for alluvial plots.
@@ -47,7 +49,8 @@ The [cran branch](https://github.com/corybrunson/ggalluvial/tree/cran)
 will contain the version most recently submitted to
 [CRAN](https://cran.r-project.org/package=ggalluvial).
 
-The development version can be installed from GitHub:
+The development version can be installed from
+GitHub:
 
 ``` r
 remotes::install_github("corybrunson/ggalluvial", build_vignettes = TRUE)
@@ -94,7 +97,8 @@ ggplot(data = titanic_wide,
   scale_x_discrete(limits = c("Class", "Sex", "Age"), expand = c(.2, .05)) +
   xlab("Demographic") +
   geom_alluvium(aes(fill = Survived)) +
-  geom_stratum() + geom_text(stat = "stratum", infer.label = TRUE) +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   theme_minimal() +
   ggtitle("passengers on the maiden voyage of the Titanic",
           "stratified by demographics and survival")

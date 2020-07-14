@@ -7,6 +7,8 @@ test_that("`geom_flow` draws correctly", {
   a1 <- aes(y = Freq, axis1 = Class, axis2 = Sex, axis3 = Age)
   a2 <- aes(y = Freq, axis1 = Class, axis2 = Sex)
   
+  skip_on_cran()
+  skip_if_not_installed("vdiffr")
   vdiffr::expect_doppelganger(
     "`geom_flow`: basic",
     ggplot(d, a1) + geom_flow()
@@ -23,9 +25,11 @@ test_that("`geom_flow` draws correctly", {
   )
 })
 
+data(vaccinations)
+
 test_that("`geom_flow` orients flows correctly", {
-  data(vaccinations)
-  
+  skip_on_cran()
+  skip_if_not_installed("vdiffr")
   vdiffr::expect_doppelganger(
     "`geom_flow`: forward orientation",
     ggplot(vaccinations,
@@ -39,5 +43,73 @@ test_that("`geom_flow` orients flows correctly", {
            aes(x = survey, stratum = response, alluvium = subject,
                y = freq, fill = response)) +
       geom_lode() + geom_flow(aes.flow = "backward")
+  )
+})
+
+test_that("`geom_flow()` recognizes alternative curves", {
+  skip_on_cran()
+  skip_if_not_installed("vdiffr")
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: unscaled knot positions",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(knot.prop = FALSE)
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'linear' curve",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "linear")
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'cubic' curve",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "cubic")
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'quintic' curve",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "quintic")
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'sine' curve",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "sine")
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'arctangent' curve",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "arctan")
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'arctangent' curve with custom range",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "arctan", curve_range = 1)
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'sigmoid' curve",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "sigmoid")
+  )
+  vdiffr::expect_doppelganger(
+    "`geom_flow`: 'sigmoid' curve with custom range",
+    ggplot(vaccinations,
+           aes(x = survey, stratum = response, alluvium = subject,
+               y = freq, fill = response)) +
+      geom_stratum() + geom_flow(curve_type = "sigmoid", curve_range = 3)
   )
 })

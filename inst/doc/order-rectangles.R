@@ -61,8 +61,8 @@ StatAlluvium$compute_panel(data)
 ## ----alluvia plot-------------------------------------------------------------
 ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
   stat_alluvium(aes(fill = class)) +
-  stat_alluvium(geom = "text", aes(label = subject)) +
-  stat_stratum(alpha = .25)
+  stat_stratum(alpha = .25) +
+  stat_alluvium(geom = "text", aes(label = subject))
 
 ## ----flows--------------------------------------------------------------------
 # flow transformation
@@ -72,7 +72,8 @@ StatFlow$compute_panel(data)
 ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
   stat_stratum() +
   stat_flow(aes(fill = class)) +
-  stat_flow(geom = "text", aes(label = subject))
+  stat_flow(geom = "text",
+            aes(label = subject, hjust = after_stat(flow) == "to"))
 
 ## ----lode zigzag--------------------------------------------------------------
 for (i in 1:4) print(lode_zigzag(4, i))
@@ -95,32 +96,42 @@ ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
 
 ## ----alluvia plot w/ strong aesthetic binding---------------------------------
 ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
-  stat_alluvium(aes(fill = class), aes.bind = "alluvia") +
+  stat_alluvium(aes(fill = class, label = subject), aes.bind = "alluvia") +
   stat_stratum() +
   stat_alluvium(geom = "text", aes(fill = class, label = subject),
                 aes.bind = "alluvia")
 
 ## ----alluvia plot w/ weak aesthetic binding-----------------------------------
 ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
-  stat_alluvium(aes(fill = class), aes.bind = "flows") +
+  stat_alluvium(aes(fill = class, label = subject), aes.bind = "flows") +
   stat_stratum() +
   stat_alluvium(geom = "text", aes(fill = class, label = subject),
                 aes.bind = "flows")
 
 ## ----flows plots w/ aesthetic binding-----------------------------------------
 ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
-  stat_flow(aes(fill = class), aes.bind = "flows") +
+  stat_flow(aes(fill = class, label = subject), aes.bind = "flows") +
   stat_stratum() +
-  stat_flow(geom = "text", aes(fill = class, label = subject),
+  stat_flow(geom = "text",
+            aes(fill = class, label = subject,
+                hjust = after_stat(flow) == "to"),
             aes.bind = "flows")
 
 ## ----alluvia plot w/ manual lode ordering-------------------------------------
-lode_ord <- matrix(1:5, nrow = 5, ncol = 4)
+lode_ord <- rep(seq(5), times = 4)
 ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
-  stat_alluvium(aes(fill = class), lode.ordering = lode_ord) +
+  stat_alluvium(aes(fill = class, order = lode_ord)) +
   stat_stratum() +
-  stat_alluvium(geom = "text", aes(fill = class, label = subject),
-                lode.ordering = lode_ord)
+  stat_alluvium(geom = "text",
+                aes(fill = class, order = lode_ord, label = subject))
+
+## ----flows plot w/ manual lode ordering---------------------------------------
+ggplot(toy, aes(x = collection, stratum = category, alluvium = subject)) +
+  stat_flow(aes(fill = class, order = lode_ord)) +
+  stat_stratum() +
+  stat_flow(geom = "text",
+            aes(fill = class, order = lode_ord, label = subject,
+                hjust = after_stat(flow) == "to"))
 
 ## ----bar plot with negative observations--------------------------------------
 set.seed(78)

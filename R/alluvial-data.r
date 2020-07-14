@@ -52,7 +52,7 @@
 #'   [dplyr::select()] to determine axis variables, as an alternative
 #'   to `axes`. Ignored when `axes` is provided.
 #' @param weight Optional field of `data`, handled using
-#'   [rlang::enquo()], to be used as heights or depths of the alluvia
+#'   [`rlang::enquo()`][rlang::nse-defuse], to be used as heights or depths of the alluvia
 #'   or lodes.
 #' @param diffuse Fields of `data`, handled using
 #'   [tidyselect::vars_select()], to merge into the reshapen data by
@@ -65,7 +65,7 @@
 #'   each such variable to a single value. In addition to existing functions,
 #'   `distill` accepts the character values `"first"` (used if
 #'   `distill` is `TRUE`), `"last"`, and `"most"` (which
-#'   returns the modal value).
+#'   returns the first modal value).
 #' @param discern Logical value indicating whether to suffix values of the
 #'   variables used as axes that appear at more than one variable in order to
 #'   distinguish their factor levels. This forces the levels of the combined
@@ -85,7 +85,8 @@ is_lodes_form <- function(data,
   id_var <- vars_pull(names(data), !! rlang::enquo(id))
   
   if (any(duplicated(cbind(data[c(key_var, id_var)])))) {
-    if (! silent) warning("Duplicated id-axis pairings.")
+    if (! silent) message("Duplicated id-axis pairings.")
+    return(if (logical) FALSE else "none")
   }
   
   n_pairs <-
@@ -269,13 +270,6 @@ to_alluvia_form <- function(data,
   }
   
   res
-}
-
-# distilling functions
-first <- dplyr::first
-last <- dplyr::last
-most <- function(x) {
-  x[which(factor(x) == names(which.max(table(factor(x)))))[1]]
 }
 
 # require different character strings to represent strata at different axes
