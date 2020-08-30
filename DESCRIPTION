@@ -1,8 +1,8 @@
 Package: ggalluvial
 Type: Package
 Title: Alluvial Plots in 'ggplot2'
-Version: 0.12.1
-Date: 2020-08-08
+Version: 0.12.2
+Date: 2020-08-30
 Authors@R: 
     person(given = "Jason Cory",
            family = "Brunson",
@@ -32,7 +32,7 @@ BugReports: https://github.com/corybrunson/ggalluvial/issues
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2020-08-10 18:12:42 UTC; corybrunson
+Packaged: 2020-08-30 21:38:03 UTC; corybrunson
 Author: Jason Cory Brunson [aut, cre]
 Repository: CRAN
-Date/Publication: 2020-08-10 22:00:03 UTC
+Date/Publication: 2020-08-30 22:00:02 UTC
