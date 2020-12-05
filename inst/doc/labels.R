@@ -2,7 +2,8 @@
 knitr::opts_chunk$set(fig.width = 6, fig.height = 4, fig.align = "center")
 library(ggalluvial)
 data(vaccinations)
-levels(vaccinations$response) <- rev(levels(vaccinations$response))
+vaccinations <- transform(vaccinations,
+                          response = factor(response, rev(levels(response))))
 
 ## ----raw----------------------------------------------------------------------
 ggplot(vaccinations,

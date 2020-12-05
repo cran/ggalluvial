@@ -91,7 +91,8 @@ ggplot(majors,
 
 ## ----alluvial plot of vaccinations dataset------------------------------------
 data(vaccinations)
-levels(vaccinations$response) <- rev(levels(vaccinations$response))
+vaccinations <- transform(vaccinations,
+                          response = factor(response, rev(levels(response))))
 ggplot(vaccinations,
        aes(x = survey, stratum = response, alluvium = subject,
            y = freq,
