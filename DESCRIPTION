@@ -1,8 +1,7 @@
 Package: ggalluvial
 Type: Package
 Title: Alluvial Plots in 'ggplot2'
-Version: 0.12.3
-Date: 2020-12-04
+Version: 0.12.4
 Authors@R: c(
     person(given = "Jason Cory",
            family = "Brunson",
@@ -23,7 +22,7 @@ Description: Alluvial plots use variable-width ribbons and stacked bar plots to
     set of parameters. This package extends Wickham's (2010)
     <doi:10.1198/jcgs.2009.07098> layered grammar of graphics to generate
     alluvial plots from tidy data.
-Depends: R (>= 3.5), ggplot2 (>= 2.2)
+Depends: R (>= 3.6), ggplot2 (>= 2.2)
 Imports: stats, dplyr (>= 0.7), tidyr (>= 0.7), lazyeval, rlang,
         tidyselect
 Suggests: grid, alluvial, testthat, knitr, rmarkdown, babynames,
@@ -34,10 +33,11 @@ LazyData: true
 URL: http://corybrunson.github.io/ggalluvial/
 BugReports: https://github.com/corybrunson/ggalluvial/issues
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
+Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2020-12-05 02:12:17 UTC; corybrunson
+Packaged: 2023-02-03 21:43:30 UTC; jason.brunson
 Author: Jason Cory Brunson [aut, cre],
   Quentin D. Read [aut]
 Repository: CRAN
-Date/Publication: 2020-12-05 16:20:02 UTC
+Date/Publication: 2023-02-03 23:32:30 UTC

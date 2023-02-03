@@ -34,16 +34,13 @@ get_alluvial_type <- function(data) {
 
 # incorporate any missing values into factor levels
 na_keep <- function(data, type) {
-  if (type == "none") {
-    stop("Data is not in a recognized alluvial form ",
-         "(see `help('alluvial-data')` for details).")
-  } else if (type == "lodes") {
+  if (type == "lodes") {
     if (is.factor(data$stratum)) {
       data$stratum <- addNA(data$stratum, ifany = TRUE)
     } else {
       data$stratum[is.na(data$stratum)] <- ""
     }
-  } else {
+  } else if (type == "alluvia") {
     axis_ind <- get_axes(names(data))
     for (i in axis_ind) {
       if (any(is.na(data[[i]]))) {
@@ -68,7 +65,7 @@ contiguate <- function(x) {
 # define 'deposit' variable to rank strata vertically
 deposit_data <- function(data, decreasing, reverse, absolute) {
   if (is.na(decreasing)) {
-    deposits <- unique(data[, c("x", "yneg", "stratum")])
+    deposits <- unique(data[, c("x", "yneg", "stratum"), drop = FALSE])
     deposits$deposit <- order(order(
       deposits$x, -deposits$yneg,
       xtfrm(deposits$stratum) * (-1) ^ (deposits$yneg * absolute + reverse)
@@ -115,7 +112,7 @@ distill_fun <- function(distill) {
 z_order_aes <- function(data, aesthetics) {
   
   # `aesthetics` and 'group' are fixed within contiguous alluvial segments
-  aes_data <- data[! duplicated(data[, c("alluvium", "group")]),
+  aes_data <- data[! duplicated(data[, c("alluvium", "group"), drop = FALSE]),
                    c("alluvium", aesthetics, "group")]
   if (length(aes_data) == 2) return(data)
   aes_data <- aes_data[do.call(order, aes_data[, c(aesthetics, "alluvium")]), ]

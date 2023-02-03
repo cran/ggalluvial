@@ -106,6 +106,9 @@ StatAlluvium <- ggproto(
       }
     }
     
+    # remove null parameter values (see #103)
+    params[vapply(params, is.null, NA)] <- NULL
+    
     params
   },
   
@@ -119,8 +122,12 @@ StatAlluvium <- ggproto(
     # assign unit amounts if not provided
     if (is.null(data$y)) {
       data$y <- rep(1, nrow(data))
-    } else if (any(is.na(data$y))) {
-      stop("Data contains missing `y` values.")
+    } else {
+      data <- remove_missing(
+        data, na.rm = params$na.rm,
+        vars = "y", name = "stat_alluvium",
+        finite = TRUE
+      )
     }
     
     type <- get_alluvial_type(data)
@@ -456,7 +463,7 @@ guide_lodes <- function(data, guidance_fun) {
 # build alluvial dataset for reference during lode-ordering
 alluviate <- function(data, key, value, id) {
   to_alluvia_form(
-    data[, c(key, value, id)],
+    data[, c(key, value, id), drop = FALSE],
     key = key, value = value, id = id
   )
 }

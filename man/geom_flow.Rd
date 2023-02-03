@@ -2,6 +2,7 @@
 % Please edit documentation in R/geom-flow.r
 \name{geom_flow}
 \alias{geom_flow}
+\alias{positions_to_flow}
 \title{Flows between lodes or strata}
 \usage{
 geom_flow(
@@ -21,12 +22,27 @@ geom_flow(
   inherit.aes = TRUE,
   ...
 )
+
+positions_to_flow(
+  x0,
+  x1,
+  ymin0,
+  ymax0,
+  ymin1,
+  ymax1,
+  kp0,
+  kp1,
+  knot.prop,
+  curve_type,
+  curve_range,
+  segments
+)
 }
 \arguments{
-\item{mapping}{Set of aesthetic mappings created by \code{\link[ggplot2:aes]{aes()}} or
-\code{\link[ggplot2:aes_]{aes_()}}. If specified and \code{inherit.aes = TRUE} (the
-default), it is combined with the default mapping at the top level of the
-plot. You must supply \code{mapping} if there is no plot mapping.}
+\item{mapping}{Set of aesthetic mappings created by \code{\link[ggplot2:aes]{aes()}}. If specified and
+\code{inherit.aes = TRUE} (the default), it is combined with the default mapping
+at the top level of the plot. You must supply \code{mapping} if there is no plot
+mapping.}
 
 \item{data}{The data to be displayed in this layer. There are three
 options:
@@ -46,8 +62,10 @@ from a \code{formula} (e.g. \code{~ head(.x, 10)}).}
 \item{stat}{The statistical transformation to use on the data;
 override the default.}
 
-\item{position}{Position adjustment, either as a string, or the result of
-a call to a position adjustment function.}
+\item{position}{Position adjustment, either as a string naming the adjustment
+(e.g. \code{"jitter"} to use \code{position_jitter}), or the result of a call to a
+position adjustment function. Use the latter if you need to change the
+settings of the adjustment.}
 
 \item{width}{Numeric; the width of each stratum, as a proportion of the
 distance between axes. Defaults to 1/3.}
@@ -96,15 +114,23 @@ that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link[ggplot2:borders]{borders()}}.}
 
 \item{...}{Additional arguments passed to \code{\link[ggplot2:layer]{ggplot2::layer()}}.}
+
+\item{x0, x1, ymin0, ymax0, ymin1, ymax1, kp0, kp1}{Numeric corner and knot position
+data for the ribbon of a single flow.}
 }
 \description{
-\code{geom_flow} receives a dataset of the horizontal (\code{x}) and
-vertical (\code{y}, \code{ymin}, \code{ymax}) positions of the \strong{lodes}
-of an alluvial plot, the intersections of the alluvia with the strata.
-It reconfigures these into alluvial segments connecting pairs of
-corresponding lodes in adjacent strata and plots filled x-splines between
-each such pair, using a provided knot position parameter \code{knot.pos}, and
-filled rectangles at either end, using a provided \code{width}.
+\code{geom_flow} receives a dataset of the horizontal (\code{x}) and vertical (\code{y},
+\code{ymin}, \code{ymax}) positions of the \strong{lodes} of an alluvial plot, the
+intersections of the alluvia with the strata. It reconfigures these into
+alluvial segments connecting pairs of corresponding lodes in adjacent strata
+and plots filled x-splines between each such pair, using a provided knot
+position parameter \code{knot.pos}, and filled rectangles at either end, using a
+provided \code{width}.
+}
+\details{
+The helper function \code{positions_toflow()} takes the corner and knot positions
+and curve parameters for a single flow as input and returns a data frame of
+\code{x}, \code{y}, and \code{shape} used by \code{\link[grid:grid.xspline]{grid::xsplineGrob()}} to render the flow.
 }
 \section{Aesthetics}{
 
@@ -223,6 +249,7 @@ ggplot(wph,
        aes(x = Year, alluvium = Region, y = Telephones)) +
   geom_flow(aes(fill = Region, colour = Region), width = 0, knot.prop = FALSE)
 
+\donttest{
 # rightward flow aesthetics for vaccine survey data, with cubic flows
 data(vaccinations)
 vaccinations$response <- factor(vaccinations$response,
@@ -243,6 +270,7 @@ ggplot(vaccinations,
   geom_text(stat = "flow",
             aes(label = after_stat(n),
                 hjust = (after_stat(flow) == "to")))
+}
 }
 \seealso{
 \code{\link[ggplot2:layer]{ggplot2::layer()}} for additional arguments and

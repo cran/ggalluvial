@@ -1,3 +1,34 @@
+# ggalluvial 0.12.4
+
+## `linewidth` aesthetic (breaking change)
+
+An upcoming release of *ggplot2* controls stroke width using the new `linewidth` aesthetic rather than `size`. This release adapts to this change internally by updating row and column layers as recommended here: <https://www.tidyverse.org/blog/2022/08/ggplot2-3-4-0-size-to-linewidth/>
+
+## Curve constructors
+
+Various curve constructors for alluvia and flows are consolidated into `data_to_alluvium()` and `positions_to_flow()`, which are now exported to the user as well as used internally by `GeomAlluvium$draw_group` and `GeomFlow$draw_panel`, respectively.
+
+## Error handling
+
+Rather than throw an error when `y` values are `NA`, the stat layers now follow **ggplot2** convention, using `remove_missing()` at the setup step with the `na.rm` parameter passed to each layer.
+
+## Aesthetic defaults
+
+To address #78 and for clarity, the legacy default `colour = 0` of three `Geom*()`s is changed to `colour = "transparent"`.
+
+## Skipping examples
+
+`\dontrun` markers have been replace by `\donttest`, per the advice here: <https://stackoverflow.com/a/68936484/4556798>. More have been added in order to reduce the time required to run.
+
+## Vignette revisions
+
+The primary vignette now uses the `HairEyeColor` data set, rather than over-using `Titanic`, to illustrate the parallel sets plot.
+
+The Shiny vignette includes an embedded app using IFrame.
+
+## Dependency upgrades
+
+The deprecated `.dots` argument of `dplyr::group_by()` has been replaced with `dplyr::across()`, preventing a warning.
 
 # ggalluvial 0.12.3
 
@@ -239,6 +270,6 @@ These changes make the functions that test for and convert between alluvial form
 
 The `ggalluvial()` shortcut function, which included a formula interface, deprecated in version 0.4.0, is removed.
 
-# earlier versions
+# ggalluvial < 0.5.0
 
 I only started maintaining `NEWS.md` with version 0.5.0.

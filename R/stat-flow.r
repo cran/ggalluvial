@@ -76,9 +76,18 @@ StatFlow <- ggproto(
   "StatFlow", Stat,
   
   required_aes = c("x"),
+  optional_aes = c("order"),
   
   # `<new-aes> = NULL` prevents "unknown aesthetics" warnings
-  default_aes = aes(weight = 1, stratum = NULL, alluvium = NULL),
+  default_aes = aes(weight = 1, stratum = NULL, alluvium = NULL, order = NULL),
+  
+  setup_params = function(data, params) {
+    
+    # remove null parameter values (see #103)
+    params[vapply(params, is.null, NA)] <- NULL
+    
+    params
+  },
   
   setup_data = function(data, params) {
     
@@ -90,8 +99,12 @@ StatFlow <- ggproto(
     # assign unit amounts if not provided
     if (is.null(data$y)) {
       data$y <- rep(1, nrow(data))
-    } else if (any(is.na(data$y))) {
-      stop("Data contains missing `y` values.")
+    } else {
+      data <- remove_missing(
+        data, na.rm = params$na.rm,
+        vars = "y", name = "stat_flow",
+        finite = TRUE
+      )
     }
     
     type <- get_alluvial_type(data)
@@ -234,7 +247,7 @@ StatFlow <- ggproto(
     adj_vars <- paste0("adj_", lnk_vars)
     # interactions of link:from:to
     for (i in seq(lnk_vars)) {
-      data <- match_flows(data, lnk_vars[i], adj_vars[i])
+      data <- match_flows(data, lnk_vars[[i]], adj_vars[[i]])
       #data[[adj_vars[i]]] <- xtfrm(data[[adj_vars[i]]])
     }
     # designate these flow pairings the alluvia
@@ -255,7 +268,7 @@ StatFlow <- ggproto(
                          names(data))
     only_vars <- c(diff_aes)
     sum_vars <- c("y", "n", "count")
-    data <- dplyr::group_by(data, .dots = by_vars)
+    data <- dplyr::group_by(data, dplyr::across(by_vars))
     # keep `NA`s in order to correctly position flows:
     # `distill()`, `only()`, and `sum(na.rm = TRUE)`
     agg_lode <- dplyr::summarize_at(data, "lode", distill)
@@ -321,8 +334,8 @@ StatFlow <- ggproto(
 )
 
 match_flows <- function(data, var, var_col) {
-  adj <- tidyr::spread_(data[, c("alluvium", "link", "flow", var)],
-                        key = "flow", value = var)
+  adj <- tidyr::spread(data[, c("alluvium", "link", "flow", var)],
+                       key = "flow", value = var)
   adj[[var_col]] <- interaction(adj$link, adj$from, adj$to, drop = TRUE)
   merge(data,
         adj[, c("alluvium", var_col)],

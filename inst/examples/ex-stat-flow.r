@@ -43,8 +43,9 @@ ggplot(vaccinations,
   geom_flow(negate.strata = "Missing") +
   geom_text(stat = "stratum", alpha = 1, negate.strata = "Missing") +
   scale_alpha_discrete(range = c(.2, .6)) +
-  guides(alpha = FALSE)
+  guides(alpha = "none")
 
+\donttest{
 # aesthetics that vary betwween and within strata
 data(vaccinations)
 vaccinations$subgroup <- LETTERS[1:2][rbinom(
@@ -65,3 +66,4 @@ ggplot(vaccinations,
   scale_alpha_discrete(range = c(1/3, 2/3)) +
   geom_stratum(alpha = .5) +
   geom_text(stat = "stratum")
+}

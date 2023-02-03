@@ -5,7 +5,7 @@
 
 [![Travis](https://travis-ci.org/corybrunson/ggalluvial.svg?branch=main)](https://travis-ci.org/corybrunson/ggalluvial)
 [![CRAN](http://www.r-pkg.org/badges/version/ggalluvial)](https://cran.r-project.org/package=ggalluvial)
-
+[![downloads](https://cranlogs.r-pkg.org/badges/ggalluvial)](https://cran.r-project.org/package=ggalluvial)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3836748.svg)](https://doi.org/10.5281/zenodo.3836748)
 [![JOSS](https://joss.theoj.org/papers/10.21105/joss.02017/status.svg)](https://doi.org/10.21105/joss.02017)
 
@@ -145,16 +145,47 @@ read the technical vignette:
 vignette(topic = "ggalluvial", package = "ggalluvial")
 ```
 
-The documentation contains several examples; use `help()` to call forth
-examples of any layer (`stat_*` or `geom_*`) or of the conversion
-functions (`to_*_form`).
+Several additional vignettes offer detailed solutions to specific needs:
+
+-   “Labeling small strata” (`"labels"`) for how to elegantly label
+    strata of a wide range of heights in an alluvial plot;
+-   “The Order of the Rectangles” (`"order-rectangles"`) for how to
+    control the positioning of strata and lodes in an alluvial plot; and
+-   “Tooltips for ggalluvial plots in Shiny apps” (`"shiny"`) for how to
+    incorporate alluvial plots into interactive apps.
+
+The object documentation includes several more examples. Use `help()` to
+call forth more detail on
+
+-   any layer (`stat_*` or `geom_*`),
+-   the conversion functions (`to_*_form`), and
+-   the data sets installed with the package (`vaccinations` and
+    `majors`).
+
+### Short form
+
+For some more digestible guidance on using **ggalluvial**, check out
+three cheat sheets and demos by students in Joyce Robbins’s [Exploratory
+Data Analysis and Visualization Community Contribution
+Project](https://jtr13.github.io/cc21fall2/index.html):
+
+-   an
+    [introduction](https://jtr13.github.io/cc21fall2/ggalluvial-cheatsheet.html)
+    by Meggie Wen (Chapter 33)
+-   a [cheat
+    sheet](https://cheatography.com/seleven/cheat-sheets/ggalluvial/) by
+    Qingyi Zhang (Chapter 14)
+-   a [blog about how this package implements alluvial
+    plots](https://medium.com/@arnavsaxena96/all-about-alluvial-diagrams-21da1505520b)
+    by Arnav Saxena (Chapter 134)
 
 ## Acknowledgments
 
 ### Resources
 
 Development of this package benefitted from the use of equipment and the
-support of colleagues at [UConn Health](https://health.uconn.edu/).
+support of colleagues at [UConn Health](https://health.uconn.edu/) and
+at [UF Health](https://ufhealth.org/).
 
 ### Contribute
 

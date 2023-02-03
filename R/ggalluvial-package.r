@@ -8,9 +8,12 @@
 #' GitHub issue tracker.
 #'
 #' Development benefitted from the use of equipment and the support of
-#' colleagues at [UConn Health](https://health.uconn.edu/).
+#' colleagues at [UConn Health](https://health.uconn.edu/) and at [UF
+#' Health](https://ufhealth.org/).
 #' 
 "_PACKAGE"
+
+#' @importFrom rlang "%||%"
 
 # stratum and lode ordering options are documented in the `stat_*()` topics
 # curve options are documented in the `geom_*()` topics

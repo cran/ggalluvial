@@ -28,19 +28,21 @@ ggplot(as.data.frame(UCBAdmissions),
   scale_fill_brewer(type = "qual", palette = "Set1") +
   ggtitle("UC Berkeley admissions and rejections, by sex and department")
 
-## ----parallel sets plot of Titanic dataset------------------------------------
-ggplot(as.data.frame(Titanic),
+## ----parallel sets plot of hair and eye color dataset-------------------------
+ggplot(as.data.frame(HairEyeColor),
        aes(y = Freq,
-           axis1 = Survived, axis2 = Sex, axis3 = Class)) +
-  geom_alluvium(aes(fill = Class),
-                width = 0, knot.pos = 0, reverse = FALSE) +
-  guides(fill = FALSE) +
-  geom_stratum(width = 1/8, reverse = FALSE) +
+           axis1 = Hair, axis2 = Eye, axis3 = Sex)) +
+  geom_alluvium(aes(fill = Eye),
+                width = 1/8, knot.pos = 0, reverse = FALSE) +
+  scale_fill_manual(values = c(Brown = "#70493D", Hazel = "#E2AC76",
+                               Green = "#3F752B", Blue = "#81B0E4")) +
+  guides(fill = "none") +
+  geom_stratum(alpha = .25, width = 1/8, reverse = FALSE) +
   geom_text(stat = "stratum", aes(label = after_stat(stratum)),
             reverse = FALSE) +
-  scale_x_continuous(breaks = 1:3, labels = c("Survived", "Sex", "Class")) +
+  scale_x_continuous(breaks = 1:3, labels = c("Hair", "Eye", "Sex")) +
   coord_flip() +
-  ggtitle("Titanic survival by class and sex")
+  ggtitle("Eye colors of 592 subjects, by sex and hair color")
 
 ## ----lodes format of Berkeley admissions dataset------------------------------
 UCB_lodes <- to_lodes_form(as.data.frame(UCBAdmissions),
