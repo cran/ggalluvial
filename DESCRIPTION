@@ -1,7 +1,7 @@
 Package: ggalluvial
 Type: Package
 Title: Alluvial Plots in 'ggplot2'
-Version: 0.12.4
+Version: 0.12.5
 Authors@R: c(
     person(given = "Jason Cory",
            family = "Brunson",
@@ -36,8 +36,8 @@ VignetteBuilder: knitr
 RoxygenNote: 7.2.3
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2023-02-03 21:43:30 UTC; jason.brunson
+Packaged: 2023-02-13 15:44:19 UTC; jason.brunson
 Author: Jason Cory Brunson [aut, cre],
   Quentin D. Read [aut]
 Repository: CRAN
-Date/Publication: 2023-02-03 23:32:30 UTC
+Date/Publication: 2023-02-22 09:50:02 UTC
